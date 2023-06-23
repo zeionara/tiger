@@ -26,4 +26,4 @@ tiger-*.tar
 /tmp/
 
 # Scripts for running the app (may contain sensitive information)
-/tools/
+/tools/run.sh
