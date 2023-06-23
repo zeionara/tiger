@@ -5,7 +5,10 @@ Git operator for trello
 ## Running
 
 ```sh
-mix run main.exs
+export TRELLO_KEY=foo
+export TRELLO_TOKEN=bar
+
+mix run main.exs --board baz
 ```
 
 ## Installation

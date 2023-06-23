@@ -12,8 +12,8 @@ defmodule Tiger do
       :world
 
   """
-  def talk do
-    Https.get('foo.bar')
-    :meow
+  def talk(board) do
+    # Http.get('foo.bar')
+    Trello.get_board(board)
   end
 end
