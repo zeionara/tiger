@@ -4,11 +4,13 @@ Git operator for trello
 
 ## Running
 
+The following command will create a new card in list named `Done` which is located on board with id `baz`. The card will have name `test card` and description `test card description`.
+
 ```sh
 export TRELLO_KEY=foo
 export TRELLO_TOKEN=bar
 
-mix run main.exs --board baz
+mix run main.exs --board baz --list Done --name 'test card'
 ```
 
 ## Installation

@@ -9,4 +9,12 @@ defmodule Trello do
   def get_board(id) do
     Http.get("#{@base}/boards/#{id}?#{@auth}")
   end
+
+  def get_lists(board) do
+    Http.get("#{@base}/boards/#{board}/lists?#{@auth}")
+  end
+
+  def create_card(list: list, name: name) do
+    Http.post("#{@base}/cards/?idList=#{list}&#{@auth}", params: %{"name" => name, "desc" => "#{name} description"})
+  end
 end

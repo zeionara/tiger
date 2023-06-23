@@ -24,3 +24,6 @@ tiger-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Scripts for running the app (may contain sensitive information)
+/tools/
