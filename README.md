@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="assets/images/logo.png" alt="logo"/>
+</p>
+
 # Tiger
 
 Git operator for trello
