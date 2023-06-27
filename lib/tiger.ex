@@ -12,7 +12,7 @@ defmodule Tiger do
       :world
 
   """
-  def create_card(board: board, list: list, name: name) do
+  def create_card(board, list, name, opts \\ []) do
     case Trello.get_lists(board) do
       {:ok, body} -> 
         lists = body |> Enum.filter(fn(x) -> x["name"] == list end)
@@ -24,7 +24,7 @@ defmodule Tiger do
         end
       error -> error
     end |> case do
-      {:ok, list} -> Trello.create_card(list: list["id"], name: name)
+      {:ok, list} -> Trello.create_card(list["id"], name, opts)
       error -> error
     end
   end

@@ -39,11 +39,18 @@ defmodule Trello do
     get("#{@root}/boards/#{board}/lists")
   end
 
-  def create_card(list: list, name: name) do
-    # post("#{@root}/cards", params: %{"idList" => list, "name" => name, "desc" => "#{name} description"})
-    case post("#{@root}/cards", params: %{"idList" => list, "name" => name, "desc" => "#{name} description"}) do
-      {:ok, card} -> {:ok, card["id"]}
-      {:error, _} -> {:error, "failed to create card"}
+  def create_card(list, name, opts \\ []) do
+    verbose = Keyword.get(opts, :verbose, false)
+
+    response = post("#{@root}/cards", params: %{"idList" => list, "name" => name, "desc" => "#{name} description"})
+
+    case verbose do
+      true -> response
+      false ->
+        case response do
+          {:ok, card} -> {:ok, card["id"]}
+          {:error, _} -> {:error, "failed to create card"}
+        end
     end
   end
 end
