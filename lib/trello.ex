@@ -42,7 +42,14 @@ defmodule Trello do
   def create_card(list, name, opts \\ []) do
     verbose = Keyword.get(opts, :verbose, false)
 
-    response = post("#{@root}/cards", params: %{"idList" => list, "name" => name, "desc" => "#{name} description"})
+    params = %{"idList" => list, "name" => name, "desc" => opts |> Keyword.get(:description, "#{name} description")}
+
+    response = post("#{@root}/cards", params:
+      case Keyword.get(opts, :members) do
+        nil -> params
+        members -> params |> Map.put("idMembers", members |> Enum.join(","))
+      end
+    )
 
     case verbose do
       true -> response
@@ -52,5 +59,9 @@ defmodule Trello do
           {:error, _} -> {:error, "failed to create card"}
         end
     end
+  end
+
+  def get_member(id) do
+    get("#{@root}/members/#{id}")
   end
 end
