@@ -36,7 +36,24 @@ patch_bashrc () {
         echo -e "$1" | head -n -1 >> $HOME/.bashrc
     fi
 
-    . ~/.bashrc
+    . $HOME/.bashrc
+}
+
+install_runtime () {
+    plugin=$1
+    verions=$2
+
+    if test -z $(asdf plugin list | grep "$plugin"); then
+        asdf plugin add "$plugin"
+    else
+        echo "plugin $plugin is already installed"
+    fi
+
+    if test -z $(asdf list "$plugin" | grep "$version"); then
+        asdf install "$plugin" "$version"
+    else
+        echo "found required $plugin version $version"
+    fi
 }
 
 # 1. Install asdf if it is not available
@@ -62,28 +79,45 @@ fi
 
 erlang_version=$(cat .tool-versions | grep erlang | cut -d ' ' -f 2)
 
-if test -z $(asdf list erlang | grep $erlang_version); then
-    asdf install erlang $erlang_version
-else
-    echo "found required erlang version $erlang_version"
-fi
+install_runtime erlang "$elixir_version"
+
+# if test -z $(asdf plugin list | grep erlang); then
+#     asdf plugin add erlang
+# else
+#     echo 'plugin erlang is already installed'
+# fi
+# 
+# if test -z $(asdf list erlang | grep $erlang_version); then
+#     asdf install erlang $erlang_version
+# else
+#     echo "found required erlang version $erlang_version"
+# fi
 
 # 3. Install elixir
 
 elixir_version=$(cat .tool-versions | grep elixir | cut -d ' ' -f 2)
 
-if test -z $(asdf list elixir | grep $elixir_version); then
-    asdf install elixir $elixir_version
-else
-    echo "found required elixir version $elixir_version"
-fi
+install_runtime elixir "$elixir_version"
+
+# if test -z $(asdf plugin list | grep elixir); then
+#     asdf plugin add elixir
+# else
+#     echo 'plugin elixir is already installed'
+# fi
+# 
+# if test -z $(asdf list elixir | grep $elixir_version); then
+#     asdf install elixir $elixir_version
+# else
+#     echo "found required elixir version $elixir_version"
+# fi
 
 # 4. Set up the language server
 
 if test -d "$elixir_ls_root"; then
     echo 'found existing elixir-ls installation'
 else
-    git clone git@github.com:elixir-lsp/elixir-ls.git "$elixir_ls_root"
+    sudo git clone https://github.com/elixir-lsp/elixir-ls.git "$elixir_ls_root"
+    sudo chown $USER "$elixir_ls_root"
 fi
 
 if test -d "$elixir_ls_root/$elixir_ls_build_dir"; then
