@@ -50,8 +50,6 @@ disable_interactive_check () {
   
   mv "$bashrc_path" "$bashrc_path_cache"
   mv "$bashrc_path_tmp" "$bashrc_path"
-
-  rm "$bashrc_path_tmp"
 }
 
 echop () {
