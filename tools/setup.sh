@@ -41,7 +41,7 @@ patch_bashrc () {
 
 install_runtime () {
     plugin=$1
-    verions=$2
+    version=$2
 
     if test -z $(asdf plugin list | grep "$plugin"); then
         asdf plugin add "$plugin"
@@ -67,7 +67,7 @@ if test -z $(which asdf); then
         sudo apt-get update
         sudo apt-get install libncurses5-dev libssl-dev automake autoconf
 
-        sudo git clone https://github.com/asdf-vm/asdf.git $asdf_root
+        sudo git clone https://github.com/asdf-vm/asdf.git "$asdf_root"
 
         patch_bashrc "$bashrc_asdf_patch"
     fi
@@ -125,8 +125,8 @@ if test -d "$elixir_ls_root/$elixir_ls_build_dir"; then
 else
     pushd "$elixir_ls_root"
 
-    asdf local erlang $erlang_version
-    asdf local elixir $elixir_version
+    asdf local erlang "$erlang_version"
+    asdf local elixir "$elixir_version"
 
     mix deps.get
     MIX_ENV=prod mix compile
