@@ -132,7 +132,7 @@ echop "Installing erlang..."
 
 erlang_version=$(cat .tool-versions | grep erlang | cut -d ' ' -f 2)
 
-install_runtime erlang "$elixir_version"
+install_runtime erlang "$erlang_version"
 
 # if test -z $(asdf plugin list | grep erlang); then
 #     asdf plugin add erlang
