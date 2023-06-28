@@ -171,6 +171,8 @@ install_runtime elixir "$elixir_version"
 if test -d "$elixir_ls_root"; then
     echop 'Found an existing elixir-ls installation'
 else
+    echop 'Downloading elixir-ls...'
+
     sudo git clone https://github.com/elixir-lsp/elixir-ls.git "$elixir_ls_root"
     sudo chown $USER "$elixir_ls_root"
 fi
@@ -178,6 +180,8 @@ fi
 if test -d "$elixir_ls_root/$elixir_ls_build_dir"; then
     echop 'Found existing elixir-ls build'
 else
+    echop 'Building elixir-ls...'
+
     pushd "$elixir_ls_root"
 
     asdf local erlang "$erlang_version"
