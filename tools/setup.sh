@@ -19,6 +19,10 @@ bashrc_elixir_ls_patch="
 export ELIXIR_LS_ROOT='$elixir_ls_root/$elixir_ls_build_dir'
 "
 
+echop () {
+    echo "🚩 $@"
+}
+
 quit () {
     if test ! -z "$1"; then
         echo "Error: $1"
@@ -36,7 +40,7 @@ patch_bashrc () {
         echo -e "$1" | head -n -1 >> $HOME/.bashrc
     fi
 
-    . $HOME/.bashrc
+    # . $HOME/.bashrc
 }
 
 install_runtime () {
@@ -46,13 +50,13 @@ install_runtime () {
     if test -z $(asdf plugin list | grep "$plugin"); then
         asdf plugin add "$plugin"
     else
-        echo "plugin $plugin is already installed"
+        echop "Plugin $plugin is already installed"
     fi
 
     if test -z $(asdf list "$plugin" | grep "$version"); then
         asdf install "$plugin" "$version"
     else
-        echo "found required $plugin version $version"
+        echop "Found required $plugin version $version"
     fi
 }
 
@@ -62,20 +66,28 @@ if test -z $(which asdf); then
     if test -d "$asdf_root"; then
         quit "Directory $asdf_root already exists. Cannot install asdf"
     else
-        echo 'installing asdf...'
+        echop 'Installing asdf...'
 
         sudo apt-get update
         sudo apt-get install libncurses5-dev libssl-dev automake autoconf
 
         sudo git clone https://github.com/asdf-vm/asdf.git "$asdf_root"
 
+        sudo chown $USER "$asdf_root"
+
         patch_bashrc "$bashrc_asdf_patch"
+
+        . $HOME/.bashrc
+
+        echop "Checking that asdf is installed properly: $(which asdf)"
     fi
 else
-    echo 'found existing asdf installation'
+    echop 'Found existing asdf installation'
 fi
 
 # 2. Install erlang
+
+echop "Installing erlang..."
 
 erlang_version=$(cat .tool-versions | grep erlang | cut -d ' ' -f 2)
 
@@ -94,6 +106,8 @@ install_runtime erlang "$elixir_version"
 # fi
 
 # 3. Install elixir
+
+echop "Installing elixir..."
 
 elixir_version=$(cat .tool-versions | grep elixir | cut -d ' ' -f 2)
 
@@ -114,14 +128,14 @@ install_runtime elixir "$elixir_version"
 # 4. Set up the language server
 
 if test -d "$elixir_ls_root"; then
-    echo 'found existing elixir-ls installation'
+    echop 'Found an existing elixir-ls installation'
 else
     sudo git clone https://github.com/elixir-lsp/elixir-ls.git "$elixir_ls_root"
     sudo chown $USER "$elixir_ls_root"
 fi
 
 if test -d "$elixir_ls_root/$elixir_ls_build_dir"; then
-    echo 'found existing elixir-ls build'
+    echop 'Found existing elixir-ls build'
 else
     pushd "$elixir_ls_root"
 
@@ -133,6 +147,8 @@ else
     MIX_ENV=prod mix elixir_ls.release2 -o "$elixir_ls_build_dir"
 
     patch_bashrc "$bashrc_elixir_ls_patch"
+
+    . $HOME/.bashrc
 
     popd
 fi
