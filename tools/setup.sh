@@ -19,6 +19,41 @@ bashrc_elixir_ls_patch="
 export ELIXIR_LS_ROOT='$elixir_ls_root/$elixir_ls_build_dir'
 "
 
+disable_interactive_check () {
+  bashrc_path="$1"
+  bashrc_path_tmp="$2"
+  bashrc_path_cache="$3"
+
+  inside_running_interactively_block=false
+  
+  while IFS= read -r line; do
+    if [ -z "$line" ]; then
+      inside_running_interactively_block=false
+    fi
+  
+    if [ "$inside_running_interactively_block" = true ] && [[ "$line" != "#"* ]]; then
+      echo "# $line"
+    else
+      if [[ "$line" == "# If not running interactively"* ]]; then
+        inside_running_interactively_block=true
+	if [[ "$line" == *"(disabled manually)" ]]; then
+	  echo "$line"
+	else
+          echo "$line (disabled manually)"
+	fi
+      else
+        echo "$line"
+      fi
+    fi
+  
+  done < "$bashrc_path" > "$bashrc_path_tmp"
+  
+  mv "$bashrc_path" "$bashrc_path_cache"
+  mv "$bashrc_path_tmp" "$bashrc_path"
+
+  rm "$bashrc_path_tmp"
+}
+
 echop () {
     echo "🚩 $@"
 }
@@ -40,7 +75,7 @@ patch_bashrc () {
         echo -e "$1" | head -n -1 >> $HOME/.bashrc
     fi
 
-    # . $HOME/.bashrc
+    . $HOME/.bashrc
 }
 
 install_runtime () {
@@ -60,6 +95,14 @@ install_runtime () {
     fi
 }
 
+# 0. Preparing .bashrc
+
+echop "Preparing bashrc by disabling interactive check..."
+
+if test ! -d "$bashrc_root"; then
+    disable_interactive_check "$HOME/.bashrc" "$HOME/.bashrc.tmp" "$HOME/.bashrc.cache"
+fi
+
 # 1. Install asdf if it is not available
 
 if test -z $(which asdf); then
@@ -77,7 +120,7 @@ if test -z $(which asdf); then
 
         patch_bashrc "$bashrc_asdf_patch"
 
-        . $HOME/.bashrc
+        # . $HOME/.bashrc
 
         echop "Checking that asdf is installed properly: $(which asdf)"
     fi
@@ -148,7 +191,7 @@ else
 
     patch_bashrc "$bashrc_elixir_ls_patch"
 
-    . $HOME/.bashrc
+    # . $HOME/.bashrc
 
     popd
 fi
