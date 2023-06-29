@@ -39,17 +39,26 @@ defmodule Trello do
     get("#{@root}/boards/#{board}/lists")
   end
 
+  def list_labels(board) do
+    get("#{@root}/boards/#{board}/labels", params: %{ "fields" => "id,name" })
+  end
+
   def create_card(list, name, opts \\ []) do
     verbose = Keyword.get(opts, :verbose, false)
 
     params = %{"idList" => list, "name" => name, "desc" => opts |> Keyword.get(:description, "#{name} description")}
 
-    response = post("#{@root}/cards", params:
-      case Keyword.get(opts, :members) do
-        nil -> params
-        members -> params |> Map.put("idMembers", members |> Enum.join(","))
-      end
-    )
+    params = case Keyword.get(opts, :members) do
+      nil -> params
+      members -> params |> Map.put("idMembers", members |> Formatter.join_list)
+    end
+
+    params = case Keyword.get(opts, :labels) do
+      nil -> params
+      labels -> params |> Map.put("idLabels", labels |> Formatter.join_list)
+    end
+
+    response = post("#{@root}/cards", params: params)
 
     case verbose do
       true -> response

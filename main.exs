@@ -6,14 +6,16 @@
     name: :string,
     description: :string,
     verbose: :boolean,
-    members: :string
+    members: :string,
+    tags: :string # tags = labels
   ], aliases: [
     b: :board,
     l: :list,
     n: :name,
     v: :verbose,
     m: :members,
-    d: :description
+    d: :description,
+    t: :tags # tags = labels
   ]
 )
 
@@ -27,11 +29,11 @@ case opts[:board] do
       list ->
         case Keyword.get(opts, :name, "test card") do
           nil -> IO.puts('Missing card name argument')
-          name -> Tiger.create_card(board, list, name, verbose: verbose, description: Keyword.get(opts, :description),
-              members: case Keyword.get(opts, :members) do
-                nil -> nil
-                members -> String.split(members, ",")
-              end
+          name -> Tiger.create_card(board, list, name,
+              verbose: verbose,
+              description: Keyword.get(opts, :description),
+              members: Formatter.parse_list(opts, :members),
+              labels: Formatter.parse_list(opts, :tags)
           ) |> IO.inspect
         end
     end

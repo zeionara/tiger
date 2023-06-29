@@ -19,6 +19,11 @@ defmodule Tiger do
     end
   end
 
+  defp get_label_ids(names, name_to_id) do
+    names
+    |> Concurrency.pmap(&(name_to_id[&1]))
+  end
+
   @doc """
   Create trello card
 
@@ -29,7 +34,7 @@ defmodule Tiger do
 
   """
 
-  def create_card(board, list, name, opts \\ []) do
+  defp create_card(board, list, name, labels, opts) do
     case Keyword.get(opts, :members) do
       nil -> {:ok, nil}
       members -> get_member_ids(members)
@@ -47,10 +52,33 @@ defmodule Tiger do
             end
           error -> error
         end |> case do
-          {:ok, list} -> Trello.create_card(list["id"], name, opts |> Keyword.merge([ members: members ]))
+          {:ok, list} -> Trello.create_card(list["id"], name, opts |> Keyword.merge([ members: members, labels: labels ]))
           error -> error
         end
     end
+  end
+
+  def create_card(board, list, name, opts \\ []) do
+    case Keyword.get(opts, :labels) do
+      nil -> {:ok, nil}
+      labels ->
+        case Trello.list_labels(board) do
+          {:error, message } -> {:error, message}
+          {:ok, response} ->
+            # response |> Map.new(fn entry -> {entry["name"], entry["id"]} end)
+            name_to_id =
+              response
+              |> Concurrency.pmap(fn entry -> {entry["name"], entry["id"]} end)
+              |> Map.new
+            ids = labels |> get_label_ids(name_to_id)
+            if Enum.member?(ids, nil) do
+              {:error, "Passed unknown labels: #{labels |> Enum.join(",")}"}
+            else
+              create_card(board, list, name, ids, opts)
+            end
+        end
+    end
+
       # members -> members |> Enum.map(
       #     fn member ->
       #       case Trello.get_member("zeionara") do
