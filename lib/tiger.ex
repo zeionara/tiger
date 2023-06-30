@@ -3,19 +3,34 @@ defmodule Tiger do
   Documentation for `Tiger`.
   """
 
-  defp get_member_ids([ head | tail]) do
+  defp get_member_ids([], _opts) do
+    {:ok, []}
+  end
+
+  defp get_member_ids([ head | tail], opts) do
+    skip = Keyword.get(opts, :skip, false)
+
     case Trello.get_member(head) do
       {:ok, member} ->
         case tail do
           [] -> {:ok, [ member["id"] ]}
           _ -> 
-            case get_member_ids(tail) do
+            case get_member_ids(tail, opts) do
               {:error, message} -> {:error, message}
               # {:ok, ids} -> {:ok, "#{member["id"]},#{ids}"}
               {:ok, ids} -> {:ok, [ member["id"] | ids ]}
             end
         end
-      {:error, _} -> {:error, "Incorrect member #{head}"}
+      {:error, _} ->
+        if skip do
+          case get_member_ids(tail, opts) do
+            {:error, message} -> {:error, message}
+            # {:ok, ids} -> {:ok, "#{member["id"]},#{ids}"}
+            {:ok, ids} -> {:ok, ids}
+          end
+        else
+          {:error, "Incorrect member #{head}"}
+        end
     end
   end
 
@@ -51,7 +66,7 @@ defmodule Tiger do
   defp create_card(board, list, name, labels, opts) do
     case Keyword.get(opts, :members) do
       nil -> {:ok, nil}
-      members -> get_member_ids(members)
+      members -> get_member_ids(members, opts)
     end |> case do
       {:error, message} -> {:error, message}
       {:ok, members} -> create_card(board, list, name, labels, members, opts)
@@ -69,6 +84,8 @@ defmodule Tiger do
   """
 
   def create_card(board, list, name, opts \\ []) do
+    skip = Keyword.get(opts, :skip, false)
+
     case Keyword.get(opts, :labels) do
       nil -> create_card(board, list, name, nil, opts)
       labels ->
@@ -80,10 +97,20 @@ defmodule Tiger do
               |> Concurrency.pmap(fn entry -> {entry["name"], entry["id"]} end)
               |> Map.new
             ids = labels |> get_label_ids(name_to_id)
-            if Enum.member?(ids, nil) do
+            if !skip and Enum.member?(ids, nil) do
               {:error, "Passed unknown labels: #{labels |> Enum.join(",")}"}
             else
-              create_card(board, list, name, ids, opts)
+              create_card(
+                board,
+                list,
+                name,
+                if Enum.member?(ids, nil) do
+                  ids |> Enum.filter(& !is_nil(&1))
+                else
+                  ids
+                end,
+                opts
+              )
             end
         end
     end

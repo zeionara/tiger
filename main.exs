@@ -7,7 +7,8 @@
     description: :string,
     verbose: :boolean,
     members: :string,
-    tags: :string # tags = labels
+    tags: :string, # tags = labels
+    skip: :boolean # skip errors when possible (for example, when incorrect member or label are provided)
   ], aliases: [
     b: :board,
     l: :list,
@@ -15,11 +16,15 @@
     v: :verbose,
     m: :members,
     d: :description,
-    t: :tags # tags = labels
+    t: :tags, # tags = labels
+    s: :skip
   ]
 )
 
+# IO.inspect(opts)
+
 verbose = Keyword.get(opts, :verbose, false)
+skip = Keyword.get(opts, :skip, false)
 
 case opts[:board] do
   nil -> IO.puts('Missing board id argument')
@@ -31,6 +36,8 @@ case opts[:board] do
           nil -> IO.puts('Missing card name argument')
           name -> Tiger.create_card(board, list, name,
               verbose: verbose,
+              skip: skip,
+
               description: Keyword.get(opts, :description),
               members: Formatter.parse_list(opts, :members),
               labels: Formatter.parse_list(opts, :tags)
