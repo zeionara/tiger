@@ -24,6 +24,33 @@ defmodule Tiger do
     |> Concurrency.pmap(&(name_to_id[&1]))
   end
 
+  defp create_card(board, list, name, labels, members, opts) do
+    case Trello.get_lists(board) do
+      {:ok, body} -> 
+        lists = body |> Enum.filter(fn(x) -> x["name"] == list end)
+        case lists |> length do
+          1 ->
+            [head | _] = lists
+            {:ok, head}
+          n -> {:error, "There are #{n} lists with name #{list}. Must be exactly one"}
+        end
+      error -> error
+    end |> case do
+      {:ok, list} -> Trello.create_card(list["id"], name, opts |> Keyword.merge([ members: members, labels: labels ]))
+      error -> error
+    end
+  end
+
+  defp create_card(board, list, name, labels, opts) do
+    case Keyword.get(opts, :members) do
+      nil -> {:ok, nil}
+      members -> get_member_ids(members)
+    end |> case do
+      {:error, message} -> {:error, message}
+      {:ok, members} -> create_card(board, list, name, labels, members, opts)
+    end
+  end
+
   @doc """
   Create trello card
 
@@ -34,38 +61,13 @@ defmodule Tiger do
 
   """
 
-  defp create_card(board, list, name, labels, opts) do
-    case Keyword.get(opts, :members) do
-      nil -> {:ok, nil}
-      members -> get_member_ids(members)
-    end |> case do
-      {:error, message} -> {:error, message}
-      {:ok, members} ->
-        case Trello.get_lists(board) do
-          {:ok, body} -> 
-            lists = body |> Enum.filter(fn(x) -> x["name"] == list end)
-            case lists |> length do
-              1 ->
-                [head | _] = lists
-                {:ok, head}
-              n -> {:error, "There are #{n} lists with name #{list}. Must be exactly one"}
-            end
-          error -> error
-        end |> case do
-          {:ok, list} -> Trello.create_card(list["id"], name, opts |> Keyword.merge([ members: members, labels: labels ]))
-          error -> error
-        end
-    end
-  end
-
   def create_card(board, list, name, opts \\ []) do
     case Keyword.get(opts, :labels) do
-      nil -> {:ok, nil}
+      nil -> create_card(board, list, name, nil, opts)
       labels ->
         case Trello.list_labels(board) do
           {:error, message } -> {:error, message}
           {:ok, response} ->
-            # response |> Map.new(fn entry -> {entry["name"], entry["id"]} end)
             name_to_id =
               response
               |> Concurrency.pmap(fn entry -> {entry["name"], entry["id"]} end)
@@ -78,12 +80,5 @@ defmodule Tiger do
             end
         end
     end
-
-      # members -> members |> Enum.map(
-      #     fn member ->
-      #       case Trello.get_member("zeionara") do
-      #         {:ok, member} -> member["id"]
-      #         {:error, _} -> {:error, "can't get info about member #{member}"}
-      #       end
   end
 end
