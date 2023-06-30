@@ -23,4 +23,20 @@ defmodule Formatter do
       # {:error, "Cannot infer naming convention of string '#{string}'"}
     end
   end
+
+  def parse_date(opts, key) do
+    {_, result} = case Keyword.get(opts, key) do
+      nil -> {:ok, nil}
+      value -> DateTimeParser.parse_date(value)
+    end
+
+    result
+  end
+
+  def encode_date(date) do
+    case date do
+      nil -> nil
+      _ -> Date.to_iso8601(date)
+    end
+  end
 end

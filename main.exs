@@ -8,7 +8,10 @@
     verbose: :boolean,
     members: :string,
     tags: :string, # tags = labels
-    skip: :boolean # skip errors when possible (for example, when incorrect member or label are provided)
+    skip: :boolean, # skip errors when possible (for example, when incorrect member or label are provided)
+    complete: :string, # complete until (due date)
+    now: :boolean,
+    done: :boolean
   ], aliases: [
     b: :board,
     l: :list,
@@ -17,7 +20,9 @@
     m: :members,
     d: :description,
     t: :tags, # tags = labels
-    s: :skip
+    s: :skip,
+    c: :complete,
+    d: :done
   ]
 )
 
@@ -25,6 +30,7 @@
 
 verbose = Keyword.get(opts, :verbose, false)
 skip = Keyword.get(opts, :skip, false)
+now = Keyword.get(opts, :now, false)
 
 case opts[:board] do
   nil -> IO.puts('Missing board id argument')
@@ -40,7 +46,17 @@ case opts[:board] do
 
               description: Keyword.get(opts, :description),
               members: Formatter.parse_list(opts, :members),
-              labels: Formatter.parse_list(opts, :tags)
+              labels: Formatter.parse_list(opts, :tags),
+              due: case Formatter.parse_date(opts, :complete) do
+                nil ->
+                  if now do
+                    DateTime.utc_now()
+                  else
+                    nil
+                  end
+                value -> value
+              end,
+              done: Keyword.get(opts, :done, false)
           ) |> IO.inspect
         end
     end

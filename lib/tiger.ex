@@ -42,7 +42,7 @@ defmodule Tiger do
     |> Concurrency.pmap(&(name_to_id[&1]))
   end
 
-  defp create_card(board, list, name, labels, members, opts) do
+  defp create_card(board, list, name, due, labels, members, opts) do
     case Trello.get_lists(board) do
       {:ok, body} -> 
         lists = body |> Enum.filter(
@@ -61,37 +61,27 @@ defmodule Tiger do
         end
       error -> error
     end |> case do
-      {:ok, list} -> Trello.create_card(list["id"], name, opts |> Keyword.merge([ members: members, labels: labels ]))
+      {:ok, list} -> Trello.create_card(list["id"], name, opts |> Keyword.merge([ due: due, members: members, labels: labels, due: Keyword.get(opts, :done, false) ]))
       error -> error
     end
   end
 
-  defp create_card(board, list, name, labels, opts) do
+  defp create_card(board, list, name, due, labels, opts) do
     case Keyword.get(opts, :members) do
       nil -> {:ok, nil}
       members -> get_member_ids(members, opts)
     end |> case do
       {:error, message} -> {:error, message}
-      {:ok, members} -> create_card(board, list, name, labels, members, opts)
+      {:ok, members} -> create_card(board, list, name, due, labels, members, opts)
     end
   end
 
-  @doc """
-  Create trello card
-
-  ## Examples
-
-      iex> Tiger.create_card("foo", "bar", "baz")
-      {:ok, "fjidjfiejfowjief"}
-
-  """
-
-  def create_card(board, list, name, opts \\ []) do
+  defp create_card(board, list, name, due, opts) do
     # skip = Keyword.get(opts, :skip, false)
     flag :skip
 
     case Keyword.get(opts, :labels) do
-      nil -> create_card(board, list, name, nil, opts)
+      nil -> create_card(board, list, name, due, nil, opts)
       labels ->
         case Trello.list_labels(board) do
           {:error, message } -> {:error, message}
@@ -108,6 +98,7 @@ defmodule Tiger do
                 board,
                 list,
                 name,
+                due,
                 if Enum.member?(ids, nil) do
                   ids |> Enum.filter(& !is_nil(&1))
                 else
@@ -118,5 +109,23 @@ defmodule Tiger do
             end
         end
     end
+  end
+
+  @doc """
+  Create trello card
+
+  ## Examples
+
+      iex> Tiger.create_card("foo", "bar", "baz")
+      {:ok, "fjidjfiejfowjief"}
+
+  """
+
+  def create_card(board, list, name, opts \\ []) do
+    create_card(board, list, name, Keyword.get(opts, :due), opts)
+    # case Keyword.get(opts, :due) do
+    #   nil -> create_card(board, list, name, nil, opts)
+    #   due -> create_card(board, list, name, due, opts)
+    # end
   end
 end

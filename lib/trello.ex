@@ -58,6 +58,17 @@ defmodule Trello do
       labels -> params |> Map.put("idLabels", labels |> Formatter.join_list)
     end
 
+    params = case Keyword.get(opts, :due) do
+      nil -> params
+      value -> params |> Map.put("due", value |> Formatter.encode_date)
+    end
+
+    params = if Keyword.get(opts, :done, false) do
+      params |> Map.put("dueComplete", true)
+    else
+      params
+    end
+
     response = post("#{@root}/cards", params: params)
 
     case verbose do
