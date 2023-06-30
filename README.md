@@ -28,5 +28,5 @@ The following command will create a new card in list named `Done` which is locat
 export TRELLO_KEY=foo
 export TRELLO_TOKEN=bar
 
-mix run main.exs --board baz --list Done --name 'test card'
+mix run main.exs --board baz --list done-this-week --name 'test card'
 ```

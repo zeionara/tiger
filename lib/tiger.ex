@@ -27,7 +27,14 @@ defmodule Tiger do
   defp create_card(board, list, name, labels, members, opts) do
     case Trello.get_lists(board) do
       {:ok, body} -> 
-        lists = body |> Enum.filter(fn(x) -> x["name"] == list end)
+        lists = body |> Enum.filter(
+          fn(x) ->
+            case x["name"] |> Formatter.to_kebab_case do
+              {:ok, string} -> string == list
+              # _ -> false
+            end
+          end
+        )
         case lists |> length do
           1 ->
             [head | _] = lists
