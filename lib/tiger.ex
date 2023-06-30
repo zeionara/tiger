@@ -1,4 +1,6 @@
 defmodule Tiger do
+  import Opts, only: [flag: 1]
+
   @moduledoc """
   Documentation for `Tiger`.
   """
@@ -8,7 +10,8 @@ defmodule Tiger do
   end
 
   defp get_member_ids([ head | tail], opts) do
-    skip = Keyword.get(opts, :skip, false)
+    flag :skip
+    # skip = Keyword.get(opts, :skip, false)
 
     case Trello.get_member(head) do
       {:ok, member} ->
@@ -84,7 +87,8 @@ defmodule Tiger do
   """
 
   def create_card(board, list, name, opts \\ []) do
-    skip = Keyword.get(opts, :skip, false)
+    # skip = Keyword.get(opts, :skip, false)
+    flag :skip
 
     case Keyword.get(opts, :labels) do
       nil -> create_card(board, list, name, nil, opts)
