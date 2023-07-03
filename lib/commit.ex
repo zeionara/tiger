@@ -9,7 +9,7 @@ defmodule Commit do
   # @title_pattern ~r/(?<type>[a-z-]+).+/
   
   defp make_task_title(commit_title) when commit_title != nil do
-    IO.inspect(commit_title)
+    Tokenizer.split(commit_title)
   end
 
   def parse(title, description \\ nil) when title != nil do
