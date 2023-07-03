@@ -15,9 +15,7 @@ defmodule Llist do
     []
   end
 
-  def join(items, sep \\ " ")
-
-  defp _join([], sep) do
+  defp _join([], _sep) do
     ""
   end
 
@@ -25,11 +23,13 @@ defmodule Llist do
     "#{sep}#{head}#{_join(tail, sep)}"
   end
 
+  def join(items, sep \\ " ")
+
   def join([ head | tail ], sep) do
     "#{head}#{_join(tail, sep)}"
   end
 
-  def join([], sep) do
+  def join([], _sep) do
     ""
   end
 end

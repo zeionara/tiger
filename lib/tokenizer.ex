@@ -5,7 +5,7 @@ defmodule Tokenizer do
 
   defp _collect_tokens(graphemes, current_word \\ [], current_sep \\ [], parsing_word \\ true, tokens \\ [])
 
-  defp _collect_tokens([], current_word, current_sep, parsing_word, tokens) do
+  defp _collect_tokens([], current_word, current_sep, _parsing_word, tokens) do
     {:ok, [[word: current_word |> Llist.reverse |> Llist.join(""), sep: current_sep |> Llist.reverse |> Llist.join("")] | tokens]}
   end
 
@@ -34,6 +34,11 @@ defmodule Tokenizer do
 
   def split(text) do
     # text |> String.graphemes |> IO.inspect
-    text |> String.graphemes |> collect_tokens |> IO.inspect
+    text |> String.graphemes |> collect_tokens
+    # case text |> String.graphemes |> collect_tokens do
+    #   {:ok, tokens} ->
+    #     IO.inspect((tokens |> Enum.at(0))[:word])
+    #   result -> result
+    # end
   end
 end
