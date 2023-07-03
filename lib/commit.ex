@@ -1,4 +1,6 @@
 defmodule Commit do
+  import Error
+
   @moduledoc """
   Commit parser and adapter for working with trello interface
   """
@@ -41,10 +43,15 @@ defmodule Commit do
             end
         end
       captures -> 
-        case make_task_title(captures["description"]) do
-          {:ok, name} -> {:ok, [name: name, labels: [captures["type"], captures["scope"]]]}
-          result -> result
-        end
+        wrap captures["description"] |> make_task_title, handle: fn name -> [name: name, labels: [captures["type"], captures["scope"]]] end
+        # wrap(
+        #   make_task_title(captures["description"]),
+        #   quote do [name: result, labels: [captures["type"], captures["scope"]]] end
+        # )
+        # case make_task_title(captures["description"]) do
+        #   {:ok, name} -> {:ok, [name: name, labels: [captures["type"], captures["scope"]]]}
+        #   result -> result
+        # end
     end
   end
 end
