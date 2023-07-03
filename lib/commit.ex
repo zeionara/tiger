@@ -9,14 +9,17 @@ defmodule Commit do
   # @title_pattern ~r/(?<type>[a-z-]+).+/
   
   defp lemmatize(word) do
-    :en |> Lemma.new |> Lemma.parse(word)
+    # :en |> Lemma.new |> Lemma.parse(word)
+    {:ok, "make"}
   end
   
   defp make_task_title(commit_title) when commit_title != nil do
     case Tokenizer.split(commit_title) do
       {:ok, tokens} ->
         case (tokens |> Enum.at(0))[:word] |> lemmatize do
-          {:ok, lemma} -> IO.inspect(lemma)
+          {:ok, lemma} ->
+            [ head | tail ] = tokens
+            {:ok, [ [word: lemma, sep: head[:sep]] | tail ] |> Tokenizer.join |> String.capitalize}
           result -> result
         end
       result -> result
@@ -31,9 +34,17 @@ defmodule Commit do
       nil ->
         case Regex.named_captures(@short_title_pattern, title) do
           nil -> {:error, "Cannot parse commit title"}
-          captures -> make_task_title(captures["description"])
+          captures -> 
+            case make_task_title(captures["description"]) do
+              {:ok, name} -> {:ok, [name: name, labels: [captures["type"]]]}
+              result -> result
+            end
         end
-      captures -> make_task_title(captures["description"])
+      captures -> 
+        case make_task_title(captures["description"]) do
+          {:ok, name} -> {:ok, [name: name, labels: [captures["type"], captures["scope"]]]}
+          result -> result
+        end
     end
   end
 end

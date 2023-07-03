@@ -36,7 +36,7 @@ verbose = Keyword.get(opts, :verbose, false)
 skip = Keyword.get(opts, :skip, false)
 now = Keyword.get(opts, :now, false)
 
-Keyword.get(opts, :commit_title) |> Commit.parse(Keyword.get(opts, :commit_description))
+Keyword.get(opts, :commit_title) |> Commit.parse(Keyword.get(opts, :commit_description)) |> IO.inspect
 
 # case opts[:board] do
 #   nil -> IO.puts('Missing board id argument')

@@ -41,4 +41,12 @@ defmodule Tokenizer do
     #   result -> result
     # end
   end
+
+  def join([]) do
+    ""
+  end
+
+  def join([ head | tail ]) do
+    "#{head[:word]}#{head[:sep]}#{join(tail)}"
+  end
 end
