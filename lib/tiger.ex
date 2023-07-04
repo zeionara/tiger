@@ -1,6 +1,8 @@
 defmodule Tiger do
   import Opts, only: [flag: 1, bop: 1]
 
+  @debug false
+
   @moduledoc """
   Documentation for `Tiger`.
   """
@@ -128,7 +130,11 @@ defmodule Tiger do
   """
 
   def create_card(board, list, name, opts \\ []) do
-    create_card(board, list, name, Keyword.get(opts, :due), opts)
+    if @debug do
+      IO.inspect opts
+    else
+      create_card(board, list, name, Keyword.get(opts, :due), opts)
+    end
     # case Keyword.get(opts, :due) do
     #   nil -> create_card(board, list, name, nil, opts)
     #   due -> create_card(board, list, name, due, opts)

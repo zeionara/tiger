@@ -1,18 +1,24 @@
 defmodule Commit do
   import Error
 
+  @debug false
+
   @moduledoc """
   Commit parser and adapter for working with trello interface
   """
 
   # @title_pattern ~r/(?<type>[a-z-]+)\\((?<scope>[^)])\)/
+  @spaces ~r/\s+/
   @long_title_pattern ~r/^(?<type>[a-z-]+)\((?<scope>.+)\):\s+(?<description>.+)\s*$/
   @short_title_pattern ~r/^(?<type>[a-z-]+):\s+(?<description>.+)\s*$/
   # @title_pattern ~r/(?<type>[a-z-]+).+/
   
   defp lemmatize(word) do
-    :en |> Lemma.new |> Lemma.parse(word)
-    # {:ok, "make"}
+    if @debug do
+      {:ok, "make"}
+    else
+      :en |> Lemma.new |> Lemma.parse(word)
+    end
   end
   
   defp make_task_title(commit_title) when commit_title != nil do
@@ -43,7 +49,7 @@ defmodule Commit do
             end
         end
       captures -> 
-        wrap captures["description"] |> make_task_title, handle: fn name -> [name: name, labels: [captures["type"], captures["scope"]]] end
+        wrap captures["description"] |> make_task_title, handle: fn name -> [name: name, labels: [captures["type"] | @spaces |> Regex.split(captures["scope"])]] end
         # wrap(
         #   make_task_title(captures["description"]),
         #   quote do [name: result, labels: [captures["type"], captures["scope"]]] end
