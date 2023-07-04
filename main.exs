@@ -13,7 +13,8 @@
     now: :boolean,
     done: :boolean,
     commit_title: :string,
-    commit_description: :string
+    commit_description: :string,
+    zoom: :boolean # put card at the top of the list
   ], aliases: [
     b: :board,
     l: :list,
@@ -26,44 +27,84 @@
     c: :complete,
     d: :done,
     ct: :commit_title,
-    cd: :commit_description
+    cd: :commit_description,
+    z: :zoom
   ]
 )
 
-IO.inspect(opts)
+# IO.inspect(opts)
 
-verbose = Keyword.get(opts, :verbose, false)
-skip = Keyword.get(opts, :skip, false)
-now = Keyword.get(opts, :now, false)
+import Opts, only: [opt: 2, opt: 1, bop: 1, flag: 1]
+import Error, only: [wrap: 2]
 
-Keyword.get(opts, :commit_title) |> Commit.parse(Keyword.get(opts, :commit_description)) |> IO.inspect
+flag :verbose
+flag :skip
+flag :now
 
-# case opts[:board] do
-#   nil -> IO.puts('Missing board id argument')
-#   board -> 
-#     case opts[:list] do
-#       nil -> IO.puts('Missing list name argument')
-#       list ->
-#         case Keyword.get(opts, :name, "test card") do
-#           nil -> IO.puts('Missing card name argument')
-#           name -> Tiger.create_card(board, list, name,
-#               verbose: verbose,
-#               skip: skip,
-# 
-#               description: Keyword.get(opts, :description),
-#               members: Formatter.parse_list(opts, :members),
-#               labels: Formatter.parse_list(opts, :tags),
-#               due: case Formatter.parse_date(opts, :complete) do
-#                 nil ->
-#                   if now do
-#                     DateTime.utc_now()
-#                   else
-#                     nil
-#                   end
-#                 value -> value
-#               end,
-#               done: Keyword.get(opts, :done, false)
-#           ) |> IO.inspect
-#         end
-#     end
-# end
+parse_date = fn (opt_name, now) ->
+  case Formatter.parse_date(opts, opt_name) do
+    nil ->
+      if now do
+        DateTime.utc_now()
+      else
+        nil
+      end
+    value -> value
+  end
+end
+
+parse_all = fn () ->
+  case opts[:board] do
+    nil -> IO.puts('Missing board id argument')
+    board -> 
+      case opts[:list] do
+        nil -> IO.puts('Missing list name argument')
+        list ->
+          case Keyword.get(opts, :name, "test card") do
+            nil -> IO.puts('Missing card name argument')
+            name -> Tiger.create_card(board, list, name,
+                verbose: verbose,
+                skip: skip,
+                zoom: bop(:zoom),
+
+                description: Keyword.get(opts, :description),
+                members: Formatter.parse_list(opts, :members),
+                labels: Formatter.parse_list(opts, :tags),
+                due: parse_date.(:complete, now),
+                done: Keyword.get(opts, :done, false)
+            ) |> IO.inspect
+          end
+      end
+  end
+end
+
+parse_some = fn (name, labels) ->
+  opt :board, handle: fn board ->
+    opt :list, handle: fn list ->
+      Tiger.create_card(board, list, name,
+        verbose: verbose,
+        skip: skip,
+        zoom: bop(:zoom),
+
+        description: opt(:description),
+        members: Formatter.parse_list(opts, :members),
+        labels: labels,
+        due: parse_date.(:complete, now),
+        done: bop :done
+      ) |> IO.inspect
+    end
+  end
+end
+
+case opt :commit_title do
+  nil -> parse_all.()
+  title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
+    parse_some.(
+      Keyword.get(task, :name, "test task"),
+      Keyword.get(task, :labels)
+    )
+  end
+end
+
+# Keyword.get(opts, :commit_title) |> Commit.parse(Keyword.get(opts, :commit_description)) |> IO.inspect
+# parse_some.(:foo, :bar)

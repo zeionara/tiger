@@ -11,8 +11,8 @@ defmodule Commit do
   # @title_pattern ~r/(?<type>[a-z-]+).+/
   
   defp lemmatize(word) do
-    # :en |> Lemma.new |> Lemma.parse(word)
-    {:ok, "make"}
+    :en |> Lemma.new |> Lemma.parse(word)
+    # {:ok, "make"}
   end
   
   defp make_task_title(commit_title) when commit_title != nil do
@@ -28,9 +28,9 @@ defmodule Commit do
     end
   end
 
-  def parse(title, description \\ nil) when title != nil do
-    IO.inspect(title)
-    IO.inspect(description)
+  def parse(title, _description \\ nil) when title != nil do
+    # IO.inspect(title)
+    # IO.inspect(description)
 
     case Regex.named_captures(@long_title_pattern, title) do
       nil ->

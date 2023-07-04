@@ -1,4 +1,6 @@
 defmodule Trello do
+  import Opts, only: [bop: 1]
+
   @api_key System.get_env("TRELLO_KEY")
   @api_token System.get_env("TRELLO_TOKEN")
   @api_version "1"
@@ -65,6 +67,12 @@ defmodule Trello do
 
     params = if Keyword.get(opts, :done, false) do
       params |> Map.put("dueComplete", true)
+    else
+      params
+    end
+
+    params = if bop :zoom do
+      params |> Map.put("pos", "top")
     else
       params
     end

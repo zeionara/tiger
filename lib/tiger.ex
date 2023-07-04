@@ -1,5 +1,5 @@
 defmodule Tiger do
-  import Opts, only: [flag: 1]
+  import Opts, only: [flag: 1, bop: 1]
 
   @moduledoc """
   Documentation for `Tiger`.
@@ -61,7 +61,13 @@ defmodule Tiger do
         end
       error -> error
     end |> case do
-      {:ok, list} -> Trello.create_card(list["id"], name, opts |> Keyword.merge([ due: due, members: members, labels: labels, due: Keyword.get(opts, :done, false) ]))
+      {:ok, list} -> Trello.create_card(list["id"], name, opts |> Keyword.merge([
+        due: due,
+        members: members,
+        labels: labels,
+        due: bop(:done),
+        zoom: bop(:zoom)
+      ]))
       error -> error
     end
   end
