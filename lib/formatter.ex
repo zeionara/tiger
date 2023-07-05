@@ -43,7 +43,7 @@ defmodule Formatter do
   def parse_body(opts, key) do
     case Keyword.get(opts, key) do
       nil -> nil
-      value -> value |> String.split("\n", parts: 2) |> Enum.at(1) |> String.trim
+      value -> value |> String.split("\n", parts: 2) |> Enum.at(1) |> String.trim |> String.capitalize
     end
   end
 end
