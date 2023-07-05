@@ -130,6 +130,8 @@ defmodule Tiger do
   """
 
   def create_card(board, list, name, opts \\ []) do
+    IO.inspect opts
+
     if @debug do
       opts
     else

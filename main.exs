@@ -32,7 +32,7 @@
   ]
 )
 
-# IO.inspect(opts)
+IO.inspect opts
 
 import Opts, only: [opt: 2, opt: 1, bop: 1, flag: 1, oop: 2]
 import Error, only: [wrap: 2]
