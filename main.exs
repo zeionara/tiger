@@ -32,7 +32,7 @@
   ]
 )
 
-IO.inspect(opts)
+# IO.inspect(opts)
 
 import Opts, only: [opt: 2, opt: 1, bop: 1, flag: 1, oop: 2]
 import Error, only: [wrap: 2]
@@ -67,10 +67,7 @@ parse_all = fn () ->
                 skip: skip,
                 zoom: bop(:zoom),
 
-                description: oop(:description, handle: fn value ->
-                  IO.inspect("Got value #{value}. Capitalize it (all)")
-                  String.capitalize(value)
-                end),
+                description: oop(:description, handle: fn value -> value |> String.trim |> String.capitalize end),
                 members: Formatter.parse_list(opts, :members),
                 labels: Formatter.parse_list(opts, :tags),
                 due: parse_date.(:complete, now),
@@ -89,10 +86,7 @@ parse_some = fn (name, labels) ->
         skip: skip,
         zoom: bop(:zoom),
 
-        description: oop(:description, handle: fn value ->
-          IO.inspect("Got value #{value}. Capitalize it (some)")
-          String.capitalize(value)
-        end),
+        description: oop(:description, handle: fn value -> value |> String.trim |> String.capitalize end),
         members: Formatter.parse_list(opts, :members),
         labels: case labels do
           nil -> Formatter.parse_list(opts, :tags)
