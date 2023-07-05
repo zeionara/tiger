@@ -67,7 +67,9 @@ parse_all = fn () ->
                 skip: skip,
                 zoom: bop(:zoom),
 
-                description: oop(:description, handle: fn value -> String.capitalize value end),
+                description: oop(:description, handle: fn value ->
+                  String.capitalize(value)
+                end),
                 members: Formatter.parse_list(opts, :members),
                 labels: Formatter.parse_list(opts, :tags),
                 due: parse_date.(:complete, now),
@@ -86,7 +88,10 @@ parse_some = fn (name, labels) ->
         skip: skip,
         zoom: bop(:zoom),
 
-        description: oop(:description, handle: fn value -> String.capitalize value end),
+        description: oop(:description, handle: fn value ->
+          IO.inspect("Got value #{value}. Capitalize it")
+          String.capitalize(value)
+        end),
         members: Formatter.parse_list(opts, :members),
         labels: case labels do
           nil -> Formatter.parse_list(opts, :tags)
