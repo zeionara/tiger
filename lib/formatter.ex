@@ -1,4 +1,6 @@
 defmodule Formatter do
+  @debug false
+
   @whitespace_pattern ~r/\s+/
 
   def parse_list(opts, key) do
@@ -43,7 +45,12 @@ defmodule Formatter do
   def parse_body(opts, key) do
     case Keyword.get(opts, key) do
       nil -> nil
-      value -> value |> String.split("\n", parts: 2) |> Enum.at(1) |> String.trim |> String.capitalize
+      value ->
+        if @debug do
+          value |> String.trim |> String.capitalize
+        else
+          value |> String.split("\n", parts: 2) |> Enum.at(1) |> String.trim |> String.capitalize
+        end
     end
   end
 end

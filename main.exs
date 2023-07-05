@@ -67,8 +67,8 @@ parse_all = fn () ->
                 skip: skip,
                 zoom: bop(:zoom),
 
-                # description: oop(:description, handle: fn value -> value |> String.trim |> String.capitalize end),
-                description: Formatter.parse_body(opts, :description),
+                description: oop(:description, handle: fn value -> value |> String.trim |> String.capitalize end),
+                # description: Formatter.parse_body(opts, :description),
                 members: Formatter.parse_list(opts, :members),
                 labels: Formatter.parse_list(opts, :tags),
                 due: parse_date.(:complete, now),
@@ -79,7 +79,7 @@ parse_all = fn () ->
   end
 end
 
-parse_some = fn (name, labels) ->
+parse_some = fn (name, labels, description) ->
   opt :board, handle: fn board ->
     opt :list, handle: fn list ->
       Tiger.create_card(board, list, name,
@@ -88,7 +88,8 @@ parse_some = fn (name, labels) ->
         zoom: bop(:zoom),
 
         # description: oop(:description, handle: fn value -> value |> String.trim |> String.capitalize end),
-        description: Formatter.parse_body(opts, :description),
+        # description: Formatter.parse_body(opts, :description),
+        description: description,
         members: Formatter.parse_list(opts, :members),
         labels: case labels do
           nil -> Formatter.parse_list(opts, :tags)
@@ -107,11 +108,18 @@ end
 
 case opt :commit_title do
   nil -> parse_all.()
-  title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
-    parse_some.(
-      Keyword.get(task, :name, "test task"),
-      Keyword.get(task, :labels)
-    )
+  # title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
+  title -> wrap Commit.parse(title, Formatter.parse_body(opts, :commit_description)), handle: fn task ->
+    for command <- Keyword.get(task, :commands, []) do
+      case command do
+        {:create} ->
+          parse_some.(
+            Keyword.get(task, :name, "test task"),
+            Keyword.get(task, :labels),
+            Keyword.get(task, :description)
+          )
+      end
+    end
   end
 end
 
