@@ -34,7 +34,7 @@
 
 # IO.inspect(opts)
 
-import Opts, only: [opt: 2, opt: 1, bop: 1, flag: 1]
+import Opts, only: [opt: 2, opt: 1, bop: 1, flag: 1, oop: 2]
 import Error, only: [wrap: 2]
 
 flag :verbose
@@ -67,7 +67,7 @@ parse_all = fn () ->
                 skip: skip,
                 zoom: bop(:zoom),
 
-                description: Keyword.get(opts, :description),
+                description: oop(:description, handle: fn value -> String.capitalize value end),
                 members: Formatter.parse_list(opts, :members),
                 labels: Formatter.parse_list(opts, :tags),
                 due: parse_date.(:complete, now),
@@ -86,7 +86,7 @@ parse_some = fn (name, labels) ->
         skip: skip,
         zoom: bop(:zoom),
 
-        description: opt(:description),
+        description: oop(:description, handle: fn value -> String.capitalize value end),
         members: Formatter.parse_list(opts, :members),
         labels: case labels do
           nil -> Formatter.parse_list(opts, :tags)

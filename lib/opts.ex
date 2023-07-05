@@ -15,6 +15,15 @@ defmodule Opts do
     end
   end
 
+  defmacro oop(name, handle: handle) do
+    quote do
+      case var!(opts) |> Keyword.get(unquote(name)) do
+        nil -> nil
+        value -> unquote(handle).(value)
+      end
+    end
+  end
+
   defmacro opt(name, default: default) do
     quote do
       Keyword.get(var!(opts), unquote(name), unquote(default))
