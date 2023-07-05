@@ -92,6 +92,7 @@ parse_some = fn (name, labels) ->
           nil -> Formatter.parse_list(opts, :tags)
           labels -> case Formatter.parse_list(opts, :tags) do
             nil -> labels
+            [ "" ] -> labels
             parsed_labels -> Llist.merge(labels, parsed_labels)
           end
         end,
