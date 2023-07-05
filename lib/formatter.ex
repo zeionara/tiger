@@ -39,4 +39,11 @@ defmodule Formatter do
       _ -> Date.to_iso8601(date)
     end
   end
+
+  def parse_body(opts, key) do
+    case Keyword.get(opts, key) do
+      nil -> nil
+      value -> value |> String.split("\n", parts: 2) |> Enum.at(1) |> String.trim
+    end
+  end
 end
