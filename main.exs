@@ -88,7 +88,13 @@ parse_some = fn (name, labels) ->
 
         description: opt(:description),
         members: Formatter.parse_list(opts, :members),
-        labels: labels,
+        labels: case labels do
+          nil -> Formatter.parse_list(opts, :tags)
+          labels -> case Formatter.parse_list(opts, :tags) do
+            nil -> labels
+            parsed_labels -> Llist.merge(labels, parsed_labels)
+          end
+        end,
         due: parse_date.(:complete, now),
         done: bop :done
       ) |> IO.inspect

@@ -131,7 +131,7 @@ defmodule Tiger do
 
   def create_card(board, list, name, opts \\ []) do
     if @debug do
-      IO.inspect opts
+      opts
     else
       create_card(board, list, name, Keyword.get(opts, :due), opts)
     end

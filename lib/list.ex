@@ -32,4 +32,16 @@ defmodule Llist do
   def join([], _sep) do
     ""
   end
+
+  def merge([ lhs_head | [] ], rhs) do
+    [ lhs_head | rhs ]
+  end
+
+  def merge([], rhs) do
+    rhs
+  end
+
+  def merge([ lhs_head | lhs_tail ], rhs) do
+    [ lhs_head | merge(lhs_tail, rhs) ]
+  end
 end
