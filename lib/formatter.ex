@@ -42,14 +42,28 @@ defmodule Formatter do
     end
   end
 
+  defp split_and_parse_body(content) do
+    parts = String.split(content, "\n", parts: 2)
+
+    if length(parts) < 2 do # commit message consists of one line which is longer than 100 symbols
+      nil
+    else
+      parts |> Enum.at(1) |> parse_body
+    end
+  end
+
+  def parse_body(content) do # skip splitting by new line, because it is tricky to type new line character in terminal
+      content |> String.trim |> String.capitalize
+  end
+
   def parse_body(opts, key) do
     case Keyword.get(opts, key) do
-      nil -> nil
+      nil -> nil # first line is shorter than 100 characters, no more lines
       value ->
         if @debug do
-          value |> String.trim |> String.capitalize
+          value |> parse_body
         else
-          value |> String.split("\n", parts: 2) |> Enum.at(1) |> String.trim |> String.capitalize
+          value |> split_and_parse_body
         end
     end
   end

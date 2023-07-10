@@ -12,7 +12,8 @@ defmodule Commit do
   @long_title_pattern ~r/^(?<type>[a-z-]+)\((?<scope>.+)\):\s+(?<description>.+)\s*$/
   @short_title_pattern ~r/^(?<type>[a-z-]+):\s+(?<description>.+)\s*$/
 
-  @command ~r/!([a-z\-]+)\s*/
+  # @command ~r/!([a-z\-]+)\s*/
+  @command ~r/!([a-z\-]+)\s*((?:\$[^\s]+\s*)*)/
 
   # @title_pattern ~r/(?<type>[a-z-]+).+/
   
@@ -37,9 +38,12 @@ defmodule Commit do
     end
   end
 
-  def parse_command(command_name) do
-    case command_name do
-      "create" -> {:create}
+  def parse_command(command_name, command_args) do
+    args = @spaces |> Regex.split(command_args) |> Llist.transform(map: fn x -> String.slice(x, 1..-1) end, filter: fn x -> x != "" end) # |> IO.inspect
+
+    case { command_name, args } do
+      { "create", [] } -> { :create, nil }
+      { "close", [ symbol ] } -> { :close, symbol }
       _ -> nil
     end
   end
@@ -48,22 +52,22 @@ defmodule Commit do
     {description, []}
   end
 
-  def parse_commands(description, [[command, command_name] | []]) do
+  def parse_commands(description, [[command, command_name, command_args] | []]) do
     {
       description |> String.replace(command, ""), 
-      case parse_command(command_name) do
+      case parse_command(command_name, command_args) do
         nil -> []
         command -> [command]
       end
     }
   end
 
-  def parse_commands(description, [[command, command_name] | tail]) do
+  def parse_commands(description, [[command, command_name, command_args] | tail]) do
     {description, commands} = parse_commands(description |> String.replace(command, ""), tail)
 
     {
       description, 
-      case parse_command(command_name) do
+      case parse_command(command_name, command_args) do
         nil -> commands
         command -> [command | commands]
       end
@@ -76,9 +80,11 @@ defmodule Commit do
     description_props = case description do
       nil -> []
       _ ->
+        # IO.inspect Regex.scan(@command, description)
+
         {description, commands} = parse_commands(description, Regex.scan(@command, description))
 
-        [description: description |> String.trim, commands: commands]
+        [description: description |> Formatter.parse_body, commands: commands]
 
         # if length(commands) > 0 do
         #   [[command, command_name] | _tail] = commands

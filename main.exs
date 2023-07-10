@@ -110,14 +110,17 @@ case opt :commit_title do
   nil -> parse_all.()
   # title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
   title -> wrap Commit.parse(title, Formatter.parse_body(opts, :commit_description)), handle: fn task ->
+    # IO.inspect task
     for command <- Keyword.get(task, :commands, []) do
       case command do
-        {:create} ->
+        {:create, nil} ->
           parse_some.(
             Keyword.get(task, :name, "test task"),
             Keyword.get(task, :labels),
             Keyword.get(task, :description)
           )
+        {:close, symbol} ->
+          IO.puts "Handler for !close command is not implemented yet. Cannot close task #{symbol} for you, please do it manually"
       end
     end
   end
