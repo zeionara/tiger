@@ -48,7 +48,8 @@ defmodule Formatter do
     if length(parts) < 2 do # commit message consists of one line which is longer than 100 symbols
       nil
     else
-      parts |> Enum.at(1) |> parse_body
+      # parts |> Enum.at(1) |> parse_body
+      parts |> Enum.at(1) |> String.trim
     end
   end
 
@@ -61,7 +62,8 @@ defmodule Formatter do
       nil -> nil # first line is shorter than 100 characters, no more lines
       value ->
         if @debug do
-          value |> parse_body
+          # value |> parse_body
+          value |> String.trim
         else
           value |> split_and_parse_body
         end

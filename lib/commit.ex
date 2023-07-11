@@ -1,7 +1,7 @@
 defmodule Commit do
   import Error
 
-  @debug false
+  @debug true
 
   @moduledoc """
   Commit parser and adapter for working with trello interface
@@ -14,6 +14,9 @@ defmodule Commit do
 
   # @command ~r/!([a-z\-]+)\s*/
   @command ~r/!([a-z\-]+)\s*((?:\$[^\s]+\s*)*)/
+  
+  @space_separated_argument_mark "^&"
+  @space_separated_argument Error.unwrap! Regex.compile("#{Regex.escape(@space_separated_argument_mark)}(.+)#{Regex.escape(@space_separated_argument_mark)}", "s") # ~r/\^&(.+)\^&/
 
   # @title_pattern ~r/(?<type>[a-z-]+).+/
   
@@ -39,11 +42,33 @@ defmodule Commit do
   end
 
   def parse_command(command_name, command_args) do
-    args = @spaces |> Regex.split(command_args) |> Llist.transform(map: fn x -> String.slice(x, 1..-1) end, filter: fn x -> x != "" end) # |> IO.inspect
+    # IO.inspect { command_name, command_args }
+
+    args = @spaces |> Regex.split(command_args) |> Llist.transform(
+      map: fn x ->
+        x = String.slice(x, 1..-1)
+
+        if String.starts_with?(x, @space_separated_argument_mark) do
+          x |> String.slice(2..-1) |> String.replace("_", " ") |> String.trim
+        else
+          x
+        end
+      end,
+      filter: fn x ->
+        x != ""
+      end,
+      split: fn x ->
+        x |> String.split(@space_separated_argument_mark)
+      end
+    ) # |> IO.inspect
+
+    IO.inspect args
 
     case { command_name, args } do
       { "create", [] } -> { :create, nil }
       { "close", [ symbol ] } -> { :close, symbol }
+      { "make", [ name ] } -> { :make, name }
+      { "make", [ name, description ] } -> { :make, [name: name |> String.trim, description: description |> String.trim] }
       _ -> nil
     end
   end
@@ -53,6 +78,8 @@ defmodule Commit do
   end
 
   def parse_commands(description, [[command, command_name, command_args] | []]) do
+    # IO.inspect { command, command_name, command_args }
+
     {
       description |> String.replace(command, ""), 
       case parse_command(command_name, command_args) do
@@ -63,6 +90,8 @@ defmodule Commit do
   end
 
   def parse_commands(description, [[command, command_name, command_args] | tail]) do
+    # IO.inspect tail
+
     {description, commands} = parse_commands(description |> String.replace(command, ""), tail)
 
     {
@@ -74,15 +103,37 @@ defmodule Commit do
     }
   end
 
+  def normalize_space_separated_arguments(description, []) do
+    description
+  end
+
+  def normalize_space_separated_arguments(description, [ [ match, value ] | tail ]) do
+    transformed_value = @spaces |> Regex.replace(value, "_")
+    description |> normalize_space_separated_arguments(tail) |> String.replace(match, "$#{@space_separated_argument_mark}#{transformed_value}")
+  end
+
   def parse(title, description \\ nil) when title != nil do
     # IO.inspect(title)
+    IO.inspect description
 
     description_props = case description do
       nil -> []
       _ ->
-        # IO.inspect Regex.scan(@command, description)
+        if @debug do
+          description = description |> normalize_space_separated_arguments(Regex.scan(@space_separated_argument, description)) |> IO.inspect
+          # for [match, value] <- Regex.scan(@space_separated_argument, description) do
+          #   transformed_value = @spaces |> Regex.replace(value, "_")
+          #   description = String.replace(description, match, "$#{@space_separated_argument_mark}#{transformed_value}") |> IO.inspect
+          # end
+          IO.inspect Regex.scan(@command, description)
+        end
 
-        {description, commands} = parse_commands(description, Regex.scan(@command, description))
+        {description, commands} = parse_commands(description, Regex.scan(@command, description |> normalize_space_separated_arguments(Regex.scan(@space_separated_argument, description))))
+
+        if @debug do
+          IO.inspect "Commands:"
+          IO.inspect commands
+        end
 
         [description: description |> Formatter.parse_body, commands: commands]
 

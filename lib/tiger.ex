@@ -1,7 +1,7 @@
 defmodule Tiger do
   import Opts, only: [flag: 1, bop: 1]
 
-  @debug false
+  @debug true
 
   @moduledoc """
   Documentation for `Tiger`.

@@ -121,6 +121,10 @@ case opt :commit_title do
           )
         {:close, symbol} ->
           IO.puts "Handler for !close command is not implemented yet. Cannot close task #{symbol} for you, please do it manually"
+        {:make, [name: name, description: description]} ->
+          IO.puts "Handler for make command is not implemented yet. Cannot make task with name '#{name}' and description '#{description}' for you, please do it manually"
+        {:make, symbol} ->
+          IO.puts "Handler for make command is not implemented yet. Cannot make task #{symbol} for you, please do it manually"
       end
     end
   end

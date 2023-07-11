@@ -8,4 +8,8 @@ defmodule Error do
       end
     end
   end
+
+  def unwrap!({:ok, content}) do
+    content
+  end
 end

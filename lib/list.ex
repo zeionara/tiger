@@ -47,6 +47,30 @@ defmodule Llist do
     [ lhs_head | merge(lhs_tail, rhs) ]
   end
 
+  def transform_([ head | tail ], opts \\ []) do
+    case opt :filter do
+      nil -> 
+        [ head | transform(tail, opts) ]
+        # case opt :map do
+        #   nil -> [ head | transform(tail) ]
+        #   map -> [ map.(head) | transform(tail, [map: map]) ]
+        # end
+      filter -> if filter.(head) do
+        [ head | transform(tail, opts) ]
+        # case opt :map do
+        #   nil -> [ head | transform(tail, [filter: filter]) ]
+        #   map -> [ map.(head) | transform(tail, [map: map, filter: filter]) ]
+        # end
+      else
+        transform(tail, opts)
+        # case opt :map do
+        #   nil -> transform(tail, [filter: filter])
+        #   map -> transform(tail, [map: map, filter: filter])
+        # end
+      end
+    end
+  end
+
   def transform(items, opts \\ [])
 
   def transform([], _opts) do
@@ -54,23 +78,21 @@ defmodule Llist do
   end
 
   def transform([ head | tail ], opts) do
-    case opt :filter do
-      nil -> 
-        case opt :map do
-          nil -> [ head | transform(tail) ]
-          map -> [ map.(head) | transform(tail, [map: map]) ]
+    head = case opt :map do
+      nil -> head
+      map -> map.(head)
+    end
+
+    case opt :split do
+      nil -> transform_([ head | tail ], opts)
+      split ->
+        items = split.(head)
+
+        if length(items) < 2 do
+          transform_([ head | tail ], opts)
+        else
+          transform_(merge(items, tail), opts)
         end
-      filter -> if filter.(head) do
-        case opt :map do
-          nil -> [ head | transform(tail, [filter: filter]) ]
-          map -> [ map.(head) | transform(tail, [map: map, filter: filter]) ]
-        end
-      else
-        case opt :map do
-          nil -> transform(tail, [filter: filter])
-          map -> transform(tail, [map: map, filter: filter])
-        end
-      end
     end
   end
 end
