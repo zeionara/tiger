@@ -95,4 +95,12 @@ defmodule Llist do
         end
     end
   end
+
+  def drop_last([ _head | [] ]) do
+    []
+  end
+
+  def drop_last([ head | tail ]) do
+    [head | drop_last(tail)]
+  end
 end
