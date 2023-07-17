@@ -1,5 +1,5 @@
 defmodule Trello do
-  import Opts, only: [bop: 1]
+  import Opts, only: [bop: 1, opt: 2, opt: 1]
 
   @api_key System.get_env("TRELLO_KEY")
   @api_token System.get_env("TRELLO_TOKEN")
@@ -33,6 +33,13 @@ defmodule Trello do
     end
   end
 
+  defp put(url, opts) do
+    url |> Http.put(
+      params: Map.merge(@auth, opt(:params, default: %{})),
+      body: opt :body
+    )
+  end
+
   def get_board(id) do
     get("#{@root}/boards/#{id}")
   end
@@ -43,6 +50,40 @@ defmodule Trello do
 
   def list_labels(board) do
     get("#{@root}/boards/#{board}/labels", params: %{ "fields" => "id,name" })
+  end
+
+  def list_cards(list) do
+    get("#{@root}/lists/#{list}/cards")
+  end
+
+  def move(card, list, opts) do
+    put(
+      "#{@root}/cards/#{card}",
+      params: %{ "idList" => list } |> zoom(bop :zoom) |> due(opt :due) |> due_complete(bop :done)
+    )
+  end
+
+  defp zoom(params, flag) do
+    if flag do
+      params |> Map.put("pos", "top")
+    else
+      params
+    end
+  end
+
+  defp due(params, date) do
+   case date do
+      nil -> params
+      value -> params |> Map.put("due", value |> Formatter.encode_date)
+    end
+  end
+
+  defp due_complete(params, flag) do
+    if flag do
+      params |> Map.put("dueComplete", true)
+    else
+      params
+    end
   end
 
   def create_card(list, name, opts \\ []) do
@@ -60,22 +101,7 @@ defmodule Trello do
       labels -> params |> Map.put("idLabels", labels |> Formatter.join_list)
     end
 
-    params = case Keyword.get(opts, :due) do
-      nil -> params
-      value -> params |> Map.put("due", value |> Formatter.encode_date)
-    end
-
-    params = if Keyword.get(opts, :done, false) do
-      params |> Map.put("dueComplete", true)
-    else
-      params
-    end
-
-    params = if bop :zoom do
-      params |> Map.put("pos", "top")
-    else
-      params
-    end
+    params = params |> due(opt :due) |> due_complete(bop :done) |> zoom(bop :zoom)
 
     response = post("#{@root}/cards", params: params)
 

@@ -35,7 +35,7 @@
 # IO.inspect opts
 
 import Opts, only: [opt: 2, opt: 1, bop: 1, flag: 1, oop: 2]
-import Error, only: [wrap: 2]
+import Error, only: [wrap: 2, escalate: 1]
 
 flag :verbose
 flag :skip
@@ -79,6 +79,17 @@ parse_all = fn () ->
   end
 end
 
+merge_label_lists = fn (labels) -> 
+  case labels do
+    nil -> Formatter.parse_list(opts, :tags)
+    labels -> case Formatter.parse_list(opts, :tags) do
+      nil -> labels
+      [ "" ] -> labels
+      parsed_labels -> Llist.merge(labels, parsed_labels)
+    end
+  end
+end
+
 parse_some = fn (name, labels, description) ->
   opt :board, handle: fn board ->
     opt :list, handle: fn list ->
@@ -91,14 +102,7 @@ parse_some = fn (name, labels, description) ->
         # description: Formatter.parse_body(opts, :description),
         description: description,
         members: Formatter.parse_list(opts, :members),
-        labels: case labels do
-          nil -> Formatter.parse_list(opts, :tags)
-          labels -> case Formatter.parse_list(opts, :tags) do
-            nil -> labels
-            [ "" ] -> labels
-            parsed_labels -> Llist.merge(labels, parsed_labels)
-          end
-        end,
+        labels: merge_label_lists.(labels),
         due: parse_date.(:complete, now),
         done: bop :done
       ) |> IO.inspect
@@ -106,11 +110,23 @@ parse_some = fn (name, labels, description) ->
   end
 end
 
+
+close = fn (signature, labels) ->
+  opt :board, handle: fn board ->
+    Tiger.close_card(board, signature,
+      verbose: verbose,
+      labels: merge_label_lists.(labels),
+      zoom: bop(:zoom),
+      due: parse_date.(:complete, now)
+    )
+  end
+end
+
 case opt :commit_title do
   nil -> parse_all.()
   # title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
   title -> wrap Commit.parse(title, Formatter.parse_body(opts, :commit_description)), handle: fn task ->
-    # IO.inspect task
+    IO.inspect task
     for command <- Keyword.get(task, :commands, []) do
       case command do
         {:create, nil} ->
@@ -120,7 +136,13 @@ case opt :commit_title do
             Keyword.get(task, :description)
           )
         {:close, symbol} ->
-          IO.puts "Handler for !close command is not implemented yet. Cannot close task #{symbol} for you, please do it manually"
+          case close.(symbol, task |> Keyword.get(:labels)) do
+            {:ok, _} -> IO.puts "Closed task #{symbol}"
+            {:error, message} ->
+              IO.puts "Cannot close task #{symbol}. See details below"
+              IO.inspect message
+          end
+          # IO.puts "Handler for !close command is not implemented yet. Cannot close task #{symbol} for you, please do it manually"
         {:make, [name: name, description: description]} ->
           IO.puts "Handler for make command is not implemented yet. Cannot make task with name '#{name}' and description '#{description}' for you, please do it manually"
         {:make, symbol} ->

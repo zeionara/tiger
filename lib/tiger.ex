@@ -1,7 +1,11 @@
 defmodule Tiger do
-  import Opts, only: [flag: 1, bop: 1]
+  import Opts, only: [flag: 1, bop: 1, opt: 1]
+  import Error, only: [wrap: 2, wrapn: 2]
 
   @debug true
+
+  @open_list System.get_env("TRELLO_OPEN_LIST")
+  @close_list System.get_env("TRELLO_CLOSE_LIST")
 
   @moduledoc """
   Documentation for `Tiger`.
@@ -44,25 +48,26 @@ defmodule Tiger do
     |> Concurrency.pmap(&(name_to_id[&1]))
   end
 
-  defp create_card(board, list, name, due, labels, members, opts) do
-    case Trello.get_lists(board) do
-      {:ok, body} -> 
-        lists = body |> Enum.filter(
-          fn(x) ->
-            case x["name"] |> Formatter.to_kebab_case do
-              {:ok, string} -> string == list
-              # _ -> false
-            end
+  defp get_list_id(board, list) do
+    wrap Trello.get_lists(board), handle: fn (body) ->
+      lists = body |> Enum.filter(
+        fn(x) ->
+          case x["name"] |> Formatter.to_kebab_case do
+            {:ok, string} -> string == list
           end
-        )
-        case lists |> length do
-          1 ->
-            [head | _] = lists
-            {:ok, head}
-          n -> {:error, "There are #{n} lists with name #{list}. Must be exactly one"}
         end
-      error -> error
-    end |> case do
+      )
+      case lists |> length do
+        1 ->
+          [head | _] = lists
+          head
+        n -> {:error, "There are #{n} lists with name #{list}. Must be exactly one"}
+      end
+    end 
+  end
+
+  defp create_card(board, list, name, due, labels, members, opts) do
+    get_list_id(board, list) |> case do
       {:ok, list} -> Trello.create_card(list["id"], name, opts |> Keyword.merge([
         due: due,
         members: members,
@@ -144,5 +149,40 @@ defmodule Tiger do
     #   nil -> create_card(board, list, name, nil, opts)
     #   due -> create_card(board, list, name, due, opts)
     # end
+  end
+
+  def close_card(board, signature, opts \\ []) do
+    # IO.inspect "Closing #{signature} with labels #{opt :labels}"
+
+    wrapn get_list_id(board, @open_list), handle: fn list ->
+      wrapn Trello.list_cards(list["id"]), handle: fn cards ->
+        cards = cards |> Enum.filter(
+          fn x ->
+            signature_matches = x["desc"] |> String.contains? signature
+
+            labels_match = case opt :labels do
+              nil -> true
+              reference_labels ->
+                labels = x["labels"] |> Enum.map(fn x -> x["name"] end)
+
+                Enum.all?(labels, fn x -> x in reference_labels end)
+            end
+
+            signature_matches and labels_match
+          end
+        )
+        case length(cards) do
+          0 -> {:error, "No cards with signature #{signature}"}
+          1 ->
+            [head | _ ] = cards
+            card = head["id"]
+
+            wrapn get_list_id(board, @close_list), handle: fn list ->
+              Trello.move(card, list["id"], Llist.merge(opts, [done: true]))
+            end
+          _ -> {:error, "Too many cards with signature #{signature}"}
+        end
+      end
+    end
   end
 end

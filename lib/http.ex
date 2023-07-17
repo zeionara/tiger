@@ -3,30 +3,42 @@ defmodule Http do
   Basic http methods for working with rest apis
   """
 
+  import Opts, only: [opt: 2]
+
   defp push_params(url, params) do
     "#{url}?#{URI.encode_query(params)}"
   end
 
-  def get(url, opts \\ []) do
-    params = Keyword.get(opts, :params, %{})
-
-    %{status_code: code, body: body} = url |> push_params(params) |> HTTPoison.get!
-
-    case code do
-      200 -> {:ok, Poison.decode!(body)}
-      _ -> {:error, "Invalid response code: #{code}"}
-    end
-  end
-
-  def post(url, opts \\ []) do
-    params = Keyword.get(opts, :params, %{})
-    body = Keyword.get(opts, :body, %{})
-
-    %{status_code: code, body: body} = url |> push_params(params) |> HTTPoison.post!(body |> Poison.encode!)
-
+  defp handle_code(code, body) do
     case code do
       200 -> {:ok, Poison.decode!(body)}
       _ -> {:error, Poison.decode!(body)}
     end
+  end
+
+  def get(url, opts \\ []) do
+    params = opt :params, default: %{}
+
+    %{status_code: code, body: body} = url |> push_params(params) |> HTTPoison.get!
+
+    handle_code(code, body)
+  end
+
+  def post(url, opts \\ []) do
+    params = opt :params, default: %{}
+    body = opt :body, default: %{}
+
+    %{status_code: code, body: body} = url |> push_params(params) |> HTTPoison.post!(body |> Poison.encode!)
+
+    handle_code(code, body)
+  end
+
+  def put(url, opts \\ []) do
+    params = opt :params, default: %{}
+    body = opt :body, default: %{}
+
+    %{status_code: code, body: body} = url |> push_params(params) |> HTTPoison.put!(body |> Poison.encode!)
+
+    handle_code(code, body)
   end
 end
