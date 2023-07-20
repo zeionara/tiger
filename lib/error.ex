@@ -4,7 +4,7 @@ defmodule Error do
       case unquote(call) do
         {:ok, result} -> {:ok, unquote(handle).(result)}
         {:error, message} -> {:error, message}
-        _ -> {:error, "Unrecognized result"}
+        # result -> {:error, "Unrecognized result", result}
       end
     end
   end
@@ -14,7 +14,7 @@ defmodule Error do
       case unquote(call) do
         {:ok, result} -> unquote(handle).(result)
         {:error, message} -> {:error, message}
-        _ -> {:error, "Unrecognized result"}
+        # result -> {:error, "Unrecognized result", result}
       end
     end
   end

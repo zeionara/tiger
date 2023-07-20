@@ -35,7 +35,7 @@
 # IO.inspect opts
 
 import Opts, only: [opt: 2, opt: 1, bop: 1, flag: 1, oop: 2]
-import Error, only: [wrap: 2, escalate: 1]
+import Error, only: [wrap: 2] # , escalate: 1]
 
 flag :verbose
 flag :skip
@@ -104,8 +104,8 @@ parse_some = fn (name, labels, description) ->
         members: Formatter.parse_list(opts, :members),
         labels: merge_label_lists.(labels),
         due: parse_date.(:complete, now),
-        done: bop :done
-      ) |> IO.inspect
+        done: bop(:done)
+      ) # |> IO.inspect
     end
   end
 end
@@ -126,7 +126,6 @@ case opt :commit_title do
   nil -> parse_all.()
   # title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
   title -> wrap Commit.parse(title, Formatter.parse_body(opts, :commit_description)), handle: fn task ->
-    IO.inspect task
     for command <- Keyword.get(task, :commands, []) do
       case command do
         {:create, nil} ->
@@ -135,6 +134,24 @@ case opt :commit_title do
             Keyword.get(task, :labels),
             Keyword.get(task, :description)
           )
+        {:create, lemmatization_spec} ->
+          # IO.inspect Keyword.get(task, :tokens)
+          # IO.inspect task
+          wrap lemmatization_spec |> Lemmatizer.parse_spec, handle: fn spec ->
+            wrap Lemmatizer.lemmatize(spec, Keyword.get(task, :tokens)), handle: fn tokens ->
+              parse_some.(
+                tokens |> Tokenizer.join |> String.capitalize,
+                Keyword.get(task, :labels),
+                Keyword.get(task, :description)
+              )
+            end
+          end
+          # parse_some.(
+          #   Keyword.get(task, :name, "test task"),
+          #   Keyword.get(task, :labels),
+          #   Keyword.get(task, :description),
+          #   lemmatization_spec
+          # )
         {:close, symbol} ->
           case close.(symbol, task |> Keyword.get(:labels)) do
             {:ok, _} -> IO.puts "Closed task #{symbol}"

@@ -141,7 +141,9 @@ defmodule Tiger do
     end
 
     if @debug do
-      opts
+      # opts
+      create_card(board, list, name, Keyword.get(opts, :due), opts)
+      # :lemmatization_spec |> opt |> Lemmatizer.parse_spec |> IO.inspect
     else
       create_card(board, list, name, Keyword.get(opts, :due), opts)
     end
@@ -152,35 +154,37 @@ defmodule Tiger do
   end
 
   def close_card(board, signature, opts \\ []) do
-    # IO.inspect "Closing #{signature} with labels #{opt :labels}"
+    if @debug do
+      {:ok, "Closed #{signature} with labels #{opt :labels}"}
+    else
+      wrapn get_list_id(board, @open_list), handle: fn list ->
+        wrapn Trello.list_cards(list["id"]), handle: fn cards ->
+          cards = cards |> Enum.filter(
+            fn x ->
+              signature_matches = x["desc"] |> String.contains?(signature)
 
-    wrapn get_list_id(board, @open_list), handle: fn list ->
-      wrapn Trello.list_cards(list["id"]), handle: fn cards ->
-        cards = cards |> Enum.filter(
-          fn x ->
-            signature_matches = x["desc"] |> String.contains? signature
+              labels_match = case opt :labels do
+                nil -> true
+                reference_labels ->
+                  labels = x["labels"] |> Enum.map(fn x -> x["name"] end)
 
-            labels_match = case opt :labels do
-              nil -> true
-              reference_labels ->
-                labels = x["labels"] |> Enum.map(fn x -> x["name"] end)
+                  Enum.all?(labels, fn x -> x in reference_labels end)
+              end
 
-                Enum.all?(labels, fn x -> x in reference_labels end)
+              signature_matches and labels_match
             end
+          )
+          case length(cards) do
+            0 -> {:error, "No cards with signature #{signature}"}
+            1 ->
+              [head | _ ] = cards
+              card = head["id"]
 
-            signature_matches and labels_match
+              wrapn get_list_id(board, @close_list), handle: fn list ->
+                Trello.move(card, list["id"], Llist.merge(opts, [done: true]))
+              end
+            _ -> {:error, "Too many cards with signature #{signature}"}
           end
-        )
-        case length(cards) do
-          0 -> {:error, "No cards with signature #{signature}"}
-          1 ->
-            [head | _ ] = cards
-            card = head["id"]
-
-            wrapn get_list_id(board, @close_list), handle: fn list ->
-              Trello.move(card, list["id"], Llist.merge(opts, [done: true]))
-            end
-          _ -> {:error, "Too many cards with signature #{signature}"}
         end
       end
     end

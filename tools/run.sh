@@ -4,9 +4,10 @@ mix run main.exs \
     --board "$TRELLO_BOARD" \
     --list done \
     --members zeionara \
-    --commit-title 'fix(ci/cd): pushed one more change' \
+    --commit-title 'fix(ci/cd): pushed one more change while pulling data, added another one, and appended the third one' \
     --commit-description 'fix(ci/cd): pushed one more change
-    !create something !close $#import-nsr once moRe !make ^&
+    !create ^&pu*@1 add*
+    appended^& something !close $#refactor-alignment once moRe !make ^&
     Some reaLLy long messaGe here
     which Even SPANS mULTIPLE lines and has spec1al characters such as &!&()$
     ^& ^&
