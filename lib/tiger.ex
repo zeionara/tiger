@@ -137,12 +137,9 @@ defmodule Tiger do
   def create_card(board, list, name, opts \\ []) do
     # IO.inspect opt
     if @debug do
-      IO.puts "board: #{board}, list: #{list}, name: #{name}"
-    end
-
-    if @debug do
-      # opts
-      create_card(board, list, name, Keyword.get(opts, :due), opts)
+      # IO.puts "board: #{board}, list: #{list}, name: #{name}"
+      # opts |> IO.inspect
+      # create_card(board, list, name, Keyword.get(opts, :due), opts)
       # :lemmatization_spec |> opt |> Lemmatizer.parse_spec |> IO.inspect
     else
       create_card(board, list, name, Keyword.get(opts, :due), opts)

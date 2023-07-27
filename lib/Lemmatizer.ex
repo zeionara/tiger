@@ -1,5 +1,5 @@
 defmodule Lemmatizer do
-  @debug false
+  @debug true
   @spaces ~r/\s+/
   @argument_separator "@"
 

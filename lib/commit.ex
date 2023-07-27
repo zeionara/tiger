@@ -1,5 +1,6 @@
 defmodule Commit do
   import Error
+  alias Tiger.Command.Argument.SpaceSeparated.Parser, as: Ssap
 
   @debug true
 
@@ -169,8 +170,6 @@ defmodule Commit do
 
   def scan_for_space_separated_arguments(description) do
     description |> String.graphemes |> collect_space_separated_arguments # |> IO.inspect
-
-    # []
   end
 
   def parse(title, description \\ nil) when title != nil do
@@ -181,7 +180,8 @@ defmodule Commit do
       nil -> []
       _ ->
         if @debug do
-          description |> scan_for_space_separated_arguments
+          description |> scan_for_space_separated_arguments |> IO.inspect
+          description |> Ssap.find_all |> IO.inspect
           # description = description |> normalize_space_separated_arguments(Regex.scan(@space_separated_argument, description)) # |> IO.inspect
           # for [match, value] <- Regex.scan(@space_separated_argument, description) do
           #   transformed_value = @spaces |> Regex.replace(value, "_")

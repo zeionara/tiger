@@ -126,6 +126,7 @@ case opt :commit_title do
   nil -> parse_all.()
   # title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
   title -> wrap Commit.parse(title, Formatter.parse_body(opts, :commit_description)), handle: fn task ->
+    IO.inspect task
     for command <- Keyword.get(task, :commands, []) do
       case command do
         {:create, nil} ->
