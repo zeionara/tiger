@@ -2,18 +2,26 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Parser do
   import Tiger.Command.Argument.SpaceSeparated.Mark
   import Tiger.Command.Argument.SpaceSeparated.Struct
 
-  import Llist, only: [reverse: 1]
+  import Error, only: [wrap: 2]
+
+  @incomplete_argument_message "Incomplete argument at the end of the string"
 
   defp collect_space_separated_arguments(graphemes, argument \\ nil, prefix \\ []) # prefix is a space separated argument mark candidate - it consists of last n graphemes
 
   defp collect_space_separated_arguments([], argument, prefix) do
-    if is_mark(prefix) && argument != nil do
-      [
-        init(argument)
-      ]
+    if is_mark(prefix) do
+      if argument == nil do
+        {:error, @incomplete_argument_message}
+      else
+        {:ok, [init(argument)]}
+      end
     else
-      []
-    end |> reverse
+      if argument == nil do
+        {:ok, []}
+      else
+        {:error, @incomplete_argument_message}
+      end
+    end
   end
 
   # @spec collect_space_separated_arguments(list(), char(), String.t(), boolean(), list(string()))
@@ -21,31 +29,17 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Parser do
     next_prefix = prepend(head, prefix)
 
     if is_mark(prefix) do
-      arguments = collect_space_separated_arguments(tail,
-        if argument == nil do
-          [head]
+      wrap collect_space_separated_arguments(tail, (if argument == nil, do: [head], else: nil), next_prefix), handle: fn arguments ->
+        if argument != nil do
+          [
+            init(argument) | arguments
+          ]
         else
-          nil
-        end,
-        next_prefix
-      )
-
-      if argument != nil do
-        [
-          init(argument) | arguments
-        ]
-      else
-        arguments
+          arguments
+        end
       end
     else
-      collect_space_separated_arguments(tail,
-        if argument != nil do
-          [ head | argument ]
-        else
-          argument
-        end,
-        next_prefix
-      )
+      collect_space_separated_arguments(tail, (if argument == nil, do: argument, else: [ head | argument ]), next_prefix)
     end
 
   end
