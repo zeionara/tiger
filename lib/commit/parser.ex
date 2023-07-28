@@ -5,6 +5,11 @@ defmodule Tiger.Commit.Parser do
 
   alias Tiger.Command.Parser, as: Command
 
+  alias Tiger.Text.Tokenizer, as: Tokenizer
+  alias Tiger.Commit.Title, as: Title
+  alias Tiger.Commit.Description, as: Description
+  alias Tiger.Commit.Message, as: Message
+
   @moduledoc """
   Commit parser and adapter for working with trello interface
   """
@@ -19,7 +24,7 @@ defmodule Tiger.Commit.Parser do
           nil -> {:error, "Incorrect commit title '#{title}' - missing prefix"}
           captures ->
             wrap Tokenizer.tokenize(captures["description"]), handle: fn text ->
-              %Tiger.Commit.Title{
+              %Title{
                 type: captures["type"],
                 content: text
               }
@@ -27,7 +32,7 @@ defmodule Tiger.Commit.Parser do
         end
       captures -> 
         wrap Tokenizer.tokenize(captures["description"]), handle: fn text -> 
-          %Tiger.Commit.Title{
+          %Title{
             type: captures["type"],
             scope: captures["scope"],
             content: text
@@ -42,7 +47,7 @@ defmodule Tiger.Commit.Parser do
       description ->
         wrap description |> Ssap.find_all, handle: fn ssaps ->
           wrapn description |> Ssan.normalize(ssaps) |> Command.find_all, handle: fn %Tiger.Command.ParsingResult{commands: commands, string: content} ->
-            %Tiger.Commit.Description{
+            %Description{
               content: content,
               commands: commands
             }
@@ -54,7 +59,7 @@ defmodule Tiger.Commit.Parser do
   def parse(title, description \\ nil) when title != nil do
     wrap parse_title(title), handle: fn title ->
       wrapn parse_description(description), handle: fn description ->
-        %Tiger.Commit.Message{
+        %Message{
           title: title,
           description: description
         }

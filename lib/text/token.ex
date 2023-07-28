@@ -5,8 +5,8 @@ defmodule Tiger.Text.Token do
 
   def init(raw, sep) do
     %Tiger.Text.Token{
-      raw: (if raw == nil, do: "", else: raw |> rjoin),
-      sep: (if sep == nil, do: "", else: sep |> rjoin)
+      raw: (if raw == nil || length(raw) < 1, do: nil, else: raw |> rjoin),
+      sep: (if sep == nil || length(sep) < 1, do: nil, else: sep |> rjoin)
     }
   end
 end
