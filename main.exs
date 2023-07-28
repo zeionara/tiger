@@ -125,7 +125,7 @@ end
 case opt :commit_title do
   nil -> parse_all.()
   # title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
-  title -> wrap Commit.parse(title, Formatter.parse_body(opts, :commit_description)), handle: fn %Tiger.Commit{
+  title -> wrap Tiger.Commit.Parser.parse(title, oop(:commit_description, handle: &Tiger.Commit.Description.drop_title/1)), handle: fn %Tiger.Commit.Message{
     title: title,
     description: %Tiger.Commit.Description{
       content: content,
