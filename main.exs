@@ -158,7 +158,9 @@ case opt :commit_title do
           # IO.inspect tokens
           # IO.inspect Keyword.get(task, :tokens)
           IO.inspect spec
-          IO.inspect spec |> Spec.init
+          wrap spec |> Spec.init, handle: fn %Spec{templates: templates} ->
+            IO.inspect Lemmatizer.lemmatize(templates, tokens, debug: true)
+          end
           # wrap lemmatization_spec |> Lemmatizer.parse_spec, handle: fn spec ->
           #   wrap Lemmatizer.lemmatize(spec, Keyword.get(task, :tokens) |> elem(1)), handle: fn tokens ->
           #     parse_some.(

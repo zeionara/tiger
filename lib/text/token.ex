@@ -24,6 +24,14 @@ defmodule Tiger.Text.Token.Template do
       }
     end
   end
+
+  def shape_match?(%Tiger.Text.Token.Template{shape: shape}, %Tiger.Text.Token{raw: raw}) do
+    shape == nil || Regex.match?(shape, raw)
+  end
+
+  def index_match?(%Tiger.Text.Token.Template{index: index}, token_index) do
+    index == nil || index == token_index
+  end
 end
 
 defmodule Tiger.Text.Token.Spec do

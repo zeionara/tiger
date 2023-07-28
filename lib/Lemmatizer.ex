@@ -1,97 +1,74 @@
 defmodule Lemmatizer do
-  # alias Tiger.Text.Token.Template, as: Template
+  import Opts, only: [flag: 1]
 
-  @debug true
-  @spaces ~r/\s+/
-  # @argument_separator "@"
+  alias Tiger.Text.Token.Template, as: Template
+  alias Tiger.Text.Token, as: Token
+
+  defstruct [shape_indices: %{}, remaining_templates: nil, all_templates: nil, engine: nil]
 
   import Error, only: [wrap: 2, wrapn: 2]
 
-  # defp parse_spec_([]) do
-  #   {:ok, []}
-  # end
+  defp lemmatize_(tokens, state, opts \\ [])
 
-  # defp parse_spec_([ head | tail ]) do
-  #   [ shape | args ] = head |> String.split(@argument_separator)
-
-  #   n_args = args |> length
-
-  #   if n_args > 1 do
-  #     {:error, "Too many arguments in lemmatization spec: #{head}"}
-  #   else
-  #     wrap parse_spec_(tail), handle: fn templates ->
-  #       wrapn Template.compile(
-  #         shape,
-  #         case n_args do
-  #           0 -> nil
-  #           1 -> args |> Tiger.Util.List.first |> Integer.parse |> Tiger.Util.Tuple.first # TODO: implement an interface
-  #         end
-  #       ), handle: fn template ->
-  #         [ template | templates ]
-  #       end
-  #     end
-  #   end
-  # end
-
-  # @spec parse_spec(String.t()) :: tuple
-  # def parse_spec(spec) do
-  #   @spaces |> Regex.split(spec) |> parse_spec_
-  # end
-
-  defp lemmatize_token_spec([], _spec, _indices, _all_spec, result, _engine) do
-    {:ok, result}
+  defp lemmatize_([], _state, _opts) do
+    {:ok, []}
   end
 
-  defp lemmatize_token_spec([ token | tail ], [], indices, all_spec, result, engine) do
-    lemmatize_token_spec(tail, all_spec, indices, all_spec, [ token | result ], engine)
+  defp lemmatize_([ token | tail ], %Lemmatizer{remaining_templates: [], all_templates: templates, shape_indices: indices, engine: engine}, opts) do
+    wrap lemmatize_(tail, %Lemmatizer{remaining_templates: templates, all_templates: templates, shape_indices: indices, engine: engine}, opts), handle: fn result ->
+      [ token | result ]
+    end
   end
 
-  defp lemmatize_token_spec(tokens, [ { pattern, index } | tail ], indices, all_spec, result, engine) do
-    [ token | token_tail ] = tokens
+  defp lemmatize_(
+    tokens = [token = %Token{raw: raw, sep: sep} | token_tail],
+    %Lemmatizer{remaining_templates: [ template = %Template{shape: shape} | tail ], all_templates: all_templates, shape_indices: indices, engine: engine},
+    opts
+  ) do
+    # [ token | token_tail ] = tokens
 
-    if Regex.match?(pattern, Keyword.get(token, :word)) do
-      next_index = Map.get(indices, pattern, 0) + 1
+    if template |> Template.shape_match?(token) do # check shape matches
+      next_index = Map.get(indices, shape, 0) + 1
 
-      if index == nil || next_index == index do
-        wrapn(
-          case @debug do
-            true -> Lemmat.parse(engine, Keyword.get(token, :word))
-            false -> Lemma.parse(engine, Keyword.get(token, :word))
-          end,
-          handle: fn lemma ->
-            lemmatize_token_spec(
-              token_tail, all_spec, Map.put(indices, pattern, next_index), all_spec, 
-              [
-                [
-                  word: lemma,
-                  sep: Keyword.get(token, :sep)
-                ] | result
-              ], engine
-            )
+      if template |> Template.index_match?(next_index) do # check index matches
+        IO.inspect {engine, raw, opts}
+        IO.inspect Lemmat.parse(engine, raw, opts)
+        wrap Lemmat.parse(engine, raw, opts), handle: fn lemma ->
+          wrapn lemmatize_(
+            token_tail,
+            %Lemmatizer{remaining_templates: all_templates, all_templates: all_templates, shape_indices: Map.put(indices, shape, next_index), engine: engine},
+            opts
+          ), handle: fn result ->
+            [
+              %Token{raw: lemma, sep: sep} | result
+            ]
           end
-        )
+        end
       else
-        lemmatize_token_spec(token_tail, all_spec, Map.put(indices, pattern, next_index), all_spec, [ token | result ], engine)
+        lemmatize_(
+          tokens,
+          %Lemmatizer{remaining_templates: tail, all_templates: all_templates, shape_indices: Map.put(indices, shape, next_index), engine: engine},
+          opts
+        )
       end
 
     else
-      lemmatize_token_spec(tokens, tail, indices, all_spec, result, engine)
+      lemmatize_(
+        tokens,
+        %Lemmatizer{remaining_templates: tail, all_templates: all_templates, shape_indices: indices, engine: engine},
+        opts
+      )
     end
   end
 
-  # defp lemmatize_token(tokens, spec, indices) do
-  #   lemmatize_token_spec(tokens, spec, %{}, spec, [])
-  # end
+  def lemmatize(spec, tokens, opts \\ []) do
+    flag :debug
 
-  def lemmatize(spec, tokens) do
-    engine = case @debug do
-      true -> nil
-      false -> :en |> Lemma.new
-    end
+    lemmatize_(tokens, %Lemmatizer{remaining_templates: spec, all_templates: spec, engine: (if debug, do: nil, else: Lemma.new(:en))}, opts)
 
-    wrap lemmatize_token_spec(tokens, spec, %{}, spec, [], engine), handle: fn tokens ->
-      Llist.reverse tokens
-    end
+    # wrap lemmatize_(tokens, %Lemmatizer{remaining_templates: spec, all_templates: spec, engine: (if debug, do: nil, else: Lemma.new(:en))}, opts), handle: fn tokens ->
+    #   Llist.reverse tokens
+    # end
     # indices = %{}
 
     # for token <- tokens do
