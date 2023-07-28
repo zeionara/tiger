@@ -6,6 +6,7 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Mark do
 
   @mark_length @mark |> String.graphemes |> length
   @mark_reversed @mark |> String.reverse
+  # @space_separated_argument Error.unwrap! Regex.compile("#{Regex.escape(@space_separated_argument_mark)}(.+)#{Regex.escape(@space_separated_argument_mark)}", "s") # ~r/\^&(.+)\^&/
 
   def is_mark (graphemes) do
     graphemes |> join == @mark_reversed
@@ -19,8 +20,8 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Mark do
     end
   end
 
-  def add_heading_mark(occurrence) do
-    "#{@mark}#{occurrence}"
+  def add_heading_mark(argument) do
+    "#{@mark}#{argument}"
   end
 
   def drop_trailing_mark(argument) do
