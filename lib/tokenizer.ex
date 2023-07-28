@@ -1,50 +1,59 @@
-defmodule Tiger.Text do
-  defstruct [:raw, :tokens]
-end
-
 defmodule Tokenizer do
+  alias Tiger.Text.Struct, as: Text
+  alias Tiger.Text.Token, as: Token
+
   import Error, only: [wrap: 2]
 
   @space ~r/\s+/
   @alphanumeric ~r/[\w\d]+/
 
-  defp _collect_tokens(graphemes, current_word \\ [], current_sep \\ [], parsing_word \\ true, tokens \\ [])
+  defp collect_tokens(graphemes, token \\ nil, separator \\ nil)
 
-  defp _collect_tokens([], current_word, current_sep, _parsing_word, tokens) do
-    {:ok, [[word: current_word |> Llist.reverse |> Llist.join(""), sep: current_sep |> Llist.reverse |> Llist.join("")] | tokens]}
+  defp collect_tokens([], token, separator) do
+    {:ok, [Token.init(token, separator)]}
   end
 
-  defp _collect_tokens([head | tail], current_word, current_sep, parsing_word, tokens) do
+  defp collect_tokens([head | tail], token, separator) do
     if Regex.match?(@alphanumeric, head) do
-      if parsing_word do
-        _collect_tokens(tail, [head | current_word], [], true, tokens)
+      if separator == nil do
+        collect_tokens(tail, (if token == nil, do: [head], else: [head | token]), nil)
       else
-        _collect_tokens(tail, [head], [], true, [[word: current_word |> Llist.reverse |> Llist.join(""), sep: current_sep |> Llist.reverse |> Llist.join("")] | tokens])
+        wrap collect_tokens(tail, [head], nil), handle: fn tokens ->
+          [ Token.init(token, separator) | tokens ]
+        end
       end
+
+      # if parsing_word do
+      #   _collect_tokens(tail, [head | current_word], [], true, tokens)
+      # else
+      #   _collect_tokens(tail, [head], [], true, [[word: current_word |> Llist.reverse |> Llist.join(""), sep: current_sep |> Llist.reverse |> Llist.join("")] | tokens])
+      # end
     else
       if Regex.match?(@space, head) do
-        _collect_tokens(tail, current_word, [head | current_sep], false, tokens)
-      else # if punctuation
-        _collect_tokens(tail, [head], [], false, [[word: current_word |> Llist.reverse |> Llist.join(""), sep: current_sep |> Llist.reverse |> Llist.join("")] | tokens])
+        collect_tokens(tail, token, (if separator == nil, do: [head], else: [head | separator])) 
+      else
+        wrap collect_tokens(tail, [head], nil), handle: fn tokens ->
+          [ Token.init(token, separator) | tokens ]
+        end
       end
+
+      # if Regex.match?(@space, head) do
+      #   _collect_tokens(tail, current_word, [head | current_sep], false, tokens)
+      # else # if punctuation
+      #   _collect_tokens(tail, [head], [], false, [[word: current_word |> Llist.reverse |> Llist.join(""), sep: current_sep |> Llist.reverse |> Llist.join("")] | tokens])
+      # end
     end
   end
 
-  defp collect_tokens(graphemes) do
-    case _collect_tokens(graphemes) do
-      {:ok, tokens} -> {:ok, tokens |> Llist.reverse}
-      {:error, message} -> {:error, message}
-    end
-  end
+  # defp collect_tokens(graphemes) do
+  #   case _collect_tokens(graphemes) do
+  #     {:ok, tokens} -> {:ok, tokens |> Llist.reverse}
+  #     {:error, message} -> {:error, message}
+  #   end
+  # end
 
-  def split(text) do
-    # text |> String.graphemes |> IO.inspect
-    text |> String.graphemes |> collect_tokens
-    # case text |> String.graphemes |> collect_tokens do
-    #   {:ok, tokens} ->
-    #     IO.inspect((tokens |> Enum.at(0))[:word])
-    #   result -> result
-    # end
+  def split(string) do
+    string |> String.graphemes |> collect_tokens
   end
 
   def join([]) do
@@ -57,7 +66,7 @@ defmodule Tokenizer do
 
   def tokenize(text) do
     wrap split(text), handle: fn tokens ->
-      %Tiger.Text{
+      %Text{
         raw: text,
         tokens: tokens
       }

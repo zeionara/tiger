@@ -6,14 +6,13 @@ defmodule Tiger.Util.String do
   @space " "
   @underscore "_"
   @empty ""
+  @comma ","
 
-  def join(graphemes) do
-    graphemes |> Llist.join("")
+  def rm(string, substring) do
+    string |> String.replace(substring, @empty)
   end
 
-  def rjoin(graphemes) do
-    graphemes |> reverse |> join
-  end
+  # replace
 
   def replace_spaces(string, replacement \\ @underscore) do
     @spaces |> Regex.replace(string, replacement)
@@ -23,11 +22,25 @@ defmodule Tiger.Util.String do
     String.replace(string, replacement, @space)
   end
 
-  def rm(string, substring) do
-    string |> String.replace(substring, @empty)
+  # join
+
+  def join(graphemes) do
+    graphemes |> Llist.join("")
   end
 
-  def ss(string) do
+  def rjoin(graphemes) do # reverse join
+    graphemes |> reverse |> join
+  end
+
+  # split
+
+  def ss(string) do # Split by Spaces
     Regex.split(@spaces, string)
+  end
+
+  def sc(string) do # Split by Commas
+    for item <- String.split(string, @comma) do
+      String.trim(item)
+    end
   end
 end

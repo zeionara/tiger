@@ -1,6 +1,4 @@
 defmodule Formatter do
-  @debug false
-
   @whitespace_pattern ~r/\s+/
 
   def parse_list(opts, key) do
@@ -42,31 +40,31 @@ defmodule Formatter do
     end
   end
 
-  defp split_and_parse_body(content) do
-    parts = String.split(content, "\n", parts: 2)
+  # defp split_and_parse_body(content) do
+  #   parts = String.split(content, "\n", parts: 2)
 
-    if length(parts) < 2 do # commit message consists of one line which is longer than 100 symbols
-      nil
-    else
-      # parts |> Enum.at(1) |> parse_body
-      parts |> Enum.at(1) |> String.trim
-    end
-  end
+  #   if length(parts) < 2 do # commit message consists of one line which is longer than 100 symbols
+  #     nil
+  #   else
+  #     # parts |> Enum.at(1) |> parse_body
+  #     parts |> Enum.at(1) |> String.trim
+  #   end
+  # end
 
-  def parse_body(content) do # skip splitting by new line, because it is tricky to type new line character in terminal
-      content |> String.trim |> String.capitalize
-  end
+  # def parse_body(content) do # skip splitting by new line, because it is tricky to type new line character in terminal
+  #     content |> String.trim |> String.capitalize
+  # end
 
-  def parse_body(opts, key) do
-    case Keyword.get(opts, key) do
-      nil -> nil # first line is shorter than 100 characters, no more lines
-      value ->
-        if @debug do
-          # value |> parse_body
-          value |> String.trim
-        else
-          value |> split_and_parse_body
-        end
-    end
-  end
+  # def parse_body(opts, key) do
+  #   case Keyword.get(opts, key) do
+  #     nil -> nil # first line is shorter than 100 characters, no more lines
+  #     value ->
+  #       if @debug do
+  #         # value |> parse_body
+  #         value |> String.trim
+  #       else
+  #         value |> split_and_parse_body
+  #       end
+  #   end
+  # end
 end
