@@ -20,4 +20,12 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Normalizer do
       |> Am.add_heading_mark
     )
   end
+
+  def denormalize(string) do
+    if Ssam.starts_with_mark?(string) do
+      string |> Ssam.drop_heading_mark |> replace_to_spaces |> String.trim
+    else
+      string
+    end
+  end
 end

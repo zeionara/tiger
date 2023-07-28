@@ -29,4 +29,14 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Mark do
       0..-(@mark_length + 1)
     )
   end
+
+  def drop_heading_mark(argument) do
+    argument |> String.slice(
+      @mark_length..-1
+    )
+  end
+
+  def starts_with_mark?(string) do
+    String.starts_with?(string, @mark)
+  end
 end

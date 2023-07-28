@@ -4,6 +4,8 @@ defmodule Commit do
   alias Tiger.Command.Argument.SpaceSeparated.Struct, as: Ssa
   alias Tiger.Command.Argument.SpaceSeparated.Normalizer, as: Ssan
 
+  alias Tiger.Command.Parser, as: Command
+
   @debug true
 
   @moduledoc """
@@ -118,7 +120,12 @@ defmodule Commit do
         # {description, commands} = parse_commands(description, Regex.scan(@command, description |> normalize_space_separated_arguments(Regex.scan(@space_separated_argument, description))))
         wrap description |> Ssap.find_all, handle: fn ssaps ->
           normalized_description = Ssan.normalize(description, ssaps)
-          IO.inspect normalized_description
+
+          description
+          |> Ssan.normalize(ssaps)
+          |> Command.find_all
+          |> IO.inspect
+
           {description, commands} = parse_commands(description, Regex.scan(@command, normalized_description))
           [description: description |> Formatter.parse_body, commands: commands]
         end
