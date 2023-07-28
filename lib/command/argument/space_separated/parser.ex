@@ -30,18 +30,17 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Parser do
 
     if is_mark(prefix) do
       wrap collect_space_separated_arguments(tail, (if argument == nil, do: [head], else: nil), next_prefix), handle: fn arguments ->
-        if argument != nil do
+        if argument == nil do
+          arguments
+        else
           [
             init(argument) | arguments
           ]
-        else
-          arguments
         end
       end
     else
       collect_space_separated_arguments(tail, (if argument == nil, do: argument, else: [ head | argument ]), next_prefix)
     end
-
   end
 
   # @spec find_space_separated_arguments(string()) :: list()

@@ -1,7 +1,7 @@
 defmodule Tiger.Command.Argument.Mark do
   @mark "$"
 
-  @mark_length @mark |> String.graphemes |> length
+  @length @mark |> String.graphemes |> length
 
   def add_heading_mark(argument) do
     "#{@mark}#{argument}"
@@ -9,7 +9,7 @@ defmodule Tiger.Command.Argument.Mark do
 
   def drop_heading_mark(argument) do
     argument |> String.slice(
-      @mark_length..-1
+      @length..-1
     )
   end
 

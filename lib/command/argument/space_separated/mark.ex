@@ -4,16 +4,16 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Mark do
 
   @mark "^&"
 
-  @mark_length @mark |> String.graphemes |> length
-  @mark_reversed @mark |> String.reverse
+  @length @mark |> String.graphemes |> length
+  @reversed @mark |> String.reverse
   # @space_separated_argument Error.unwrap! Regex.compile("#{Regex.escape(@space_separated_argument_mark)}(.+)#{Regex.escape(@space_separated_argument_mark)}", "s") # ~r/\^&(.+)\^&/
 
   def is_mark (graphemes) do
-    graphemes |> join == @mark_reversed
+    graphemes |> join == @reversed
   end
 
   def prepend(grapheme, prefix) do
-    if length(prefix) < @mark_length do
+    if length(prefix) < @length do
       [ grapheme | prefix ]
     else
       [ grapheme | prefix |> drop_last ]
@@ -24,15 +24,15 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Mark do
     "#{@mark}#{argument}"
   end
 
-  def drop_trailing_mark(argument) do
+  def drop_heading_mark(argument) do
     argument |> String.slice(
-      0..-(@mark_length + 1)
+      @length..-1
     )
   end
 
-  def drop_heading_mark(argument) do
+  def drop_trailing_mark(argument) do
     argument |> String.slice(
-      @mark_length..-1
+      0..-(@length + 1)
     )
   end
 

@@ -1,4 +1,9 @@
+defmodule Tiger.Text do
+  defstruct [:raw, :tokens]
+end
+
 defmodule Tokenizer do
+  import Error, only: [wrap: 2]
 
   @space ~r/\s+/
   @alphanumeric ~r/[\w\d]+/
@@ -48,5 +53,14 @@ defmodule Tokenizer do
 
   def join([ head | tail ]) do
     "#{head[:word]}#{head[:sep]}#{join(tail)}"
+  end
+
+  def tokenize(text) do
+    wrap split(text), handle: fn tokens ->
+      %Tiger.Text{
+        raw: text,
+        tokens: tokens
+      }
+    end
   end
 end

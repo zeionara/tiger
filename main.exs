@@ -125,45 +125,52 @@ end
 case opt :commit_title do
   nil -> parse_all.()
   # title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
-  title -> wrap Commit.parse(title, Formatter.parse_body(opts, :commit_description)), handle: fn task ->
-    IO.inspect task
-    for command <- Keyword.get(task, :commands, []) do
+  title -> wrap Commit.parse(title, Formatter.parse_body(opts, :commit_description)), handle: fn %Tiger.Commit{
+    title: title,
+    description: %Tiger.Commit.Description{
+      content: content,
+      commands: commands
+    }
+  } ->
+    for command <- commands do
       case command do
-        {:create, nil} ->
-          parse_some.(
-            Keyword.get(task, :name, "test task"),
-            Keyword.get(task, :labels),
-            Keyword.get(task, :description)
-          )
-        {:create, lemmatization_spec} ->
+        %Tiger.Command.Struct{name: :create, args: []} ->
+          IO.puts "empty create"
+          # parse_some.(
+          #   Keyword.get(task, :name, "test task"),
+          #   Keyword.get(task, :labels),
+          #   Keyword.get(task, :description)
+          # )
+        %Tiger.Command.Struct{name: :create, args: [lemmatization_spec]} ->
+          IO.puts "lemmatized create"
           # IO.inspect Keyword.get(task, :tokens)
-          # IO.inspect task
-          wrap lemmatization_spec |> Lemmatizer.parse_spec, handle: fn spec ->
-            wrap Lemmatizer.lemmatize(spec, Keyword.get(task, :tokens)), handle: fn tokens ->
-              parse_some.(
-                tokens |> Tokenizer.join |> String.capitalize,
-                Keyword.get(task, :labels),
-                Keyword.get(task, :description)
-              )
-            end
-          end
+          # wrap lemmatization_spec |> Lemmatizer.parse_spec, handle: fn spec ->
+          #   wrap Lemmatizer.lemmatize(spec, Keyword.get(task, :tokens) |> elem(1)), handle: fn tokens ->
+          #     parse_some.(
+          #       tokens |> Tokenizer.join |> String.capitalize,
+          #       Keyword.get(task, :labels),
+          #       Keyword.get(task, :description)
+          #     )
+          #   end
+          # end
           # parse_some.(
           #   Keyword.get(task, :name, "test task"),
           #   Keyword.get(task, :labels),
           #   Keyword.get(task, :description),
           #   lemmatization_spec
           # )
-        {:close, symbol} ->
-          case close.(symbol, task |> Keyword.get(:labels)) do
-            {:ok, _} -> IO.puts "Closed task #{symbol}"
-            {:error, message} ->
-              IO.puts "Cannot close task #{symbol}. See details below"
-              IO.inspect message
-          end
+        %Tiger.Command.Struct{name: :close, args: [symbol]} ->
+          IO.puts "close"
+          # case close.(symbol, task |> Keyword.get(:labels)) do
+          #   {:ok, _} -> IO.puts "Closed task #{symbol}"
+          #   {:error, message} ->
+          #     IO.puts "Cannot close task #{symbol}. See details below"
+          #     IO.inspect message
+          # end
           # IO.puts "Handler for !close command is not implemented yet. Cannot close task #{symbol} for you, please do it manually"
-        {:make, [name: name, description: description]} ->
+        %Tiger.Command.Struct{name: :make, args: [name: name, description: description]} ->
           IO.puts "Handler for make command is not implemented yet. Cannot make task with name '#{name}' and description '#{description}' for you, please do it manually"
-        {:make, symbol} ->
+        %Tiger.Command.Struct{name: :make, args: [symbol]} ->
           IO.puts "Handler for make command is not implemented yet. Cannot make task #{symbol} for you, please do it manually"
       end
     end
