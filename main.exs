@@ -40,6 +40,7 @@ import Error, only: [wrap: 2] # , escalate: 1]
 alias Tiger.Commit.Title, as: Title
 alias Tiger.Commit.Description, as: Description
 alias Tiger.Command.Struct, as: Command
+alias Tiger.Text.Token.Spec, as: Spec
 
 flag :verbose
 flag :skip
@@ -151,11 +152,13 @@ case opt :commit_title do
           #   Keyword.get(task, :labels),
           #   Keyword.get(task, :description)
           # )
-        %Command{name: :create, args: [lemmatization_spec]} ->
+        %Command{name: :create, args: [spec]} ->
           IO.puts "lemmatized create"
-          IO.inspect Title.labels(title)
-          IO.inspect tokens
+          # IO.inspect Title.labels(title)
+          # IO.inspect tokens
           # IO.inspect Keyword.get(task, :tokens)
+          IO.inspect spec
+          IO.inspect spec |> Spec.init
           # wrap lemmatization_spec |> Lemmatizer.parse_spec, handle: fn spec ->
           #   wrap Lemmatizer.lemmatize(spec, Keyword.get(task, :tokens) |> elem(1)), handle: fn tokens ->
           #     parse_some.(

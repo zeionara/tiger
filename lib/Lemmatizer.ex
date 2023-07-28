@@ -1,51 +1,42 @@
 defmodule Lemmatizer do
+  # alias Tiger.Text.Token.Template, as: Template
+
   @debug true
   @spaces ~r/\s+/
-  @argument_separator "@"
+  # @argument_separator "@"
 
   import Error, only: [wrap: 2, wrapn: 2]
 
-  defp parse_spec_([]) do
-    {:ok, []}
-  end
+  # defp parse_spec_([]) do
+  #   {:ok, []}
+  # end
 
-  defp parse_spec_([ head | tail ]) do
-    [ pattern | args ] = head |> String.split(@argument_separator)
+  # defp parse_spec_([ head | tail ]) do
+  #   [ shape | args ] = head |> String.split(@argument_separator)
 
-    n_args = args |> length
+  #   n_args = args |> length
 
-    if n_args > 1 do
-      {:error, "Too many arguments in lemmatization spec: #{head}"}
-    else
-      wrap parse_spec_(tail), handle: fn parsed_items ->
-        wrapn pattern |> String.replace("*", "[^\\s]*") |> Regex.compile, handle: fn pattern ->
-          [
-            {
-              pattern,
-              case n_args do
-                0 -> nil
-                1 -> args |> Enum.at(0) |> Integer.parse |> elem(0)
-              end
-            } | parsed_items
-          ]
-        end
-      end
-    end
-  end
+  #   if n_args > 1 do
+  #     {:error, "Too many arguments in lemmatization spec: #{head}"}
+  #   else
+  #     wrap parse_spec_(tail), handle: fn templates ->
+  #       wrapn Template.compile(
+  #         shape,
+  #         case n_args do
+  #           0 -> nil
+  #           1 -> args |> Tiger.Util.List.first |> Integer.parse |> Tiger.Util.Tuple.first # TODO: implement an interface
+  #         end
+  #       ), handle: fn template ->
+  #         [ template | templates ]
+  #       end
+  #     end
+  #   end
+  # end
 
-  @spec parse_spec(String.t()) :: tuple
-  def parse_spec(spec) do
-    @spaces |> Regex.split(spec) |> parse_spec_
-    # for x <- @spaces |> Regex.split(spec) do
-    #   [pattern | index] = x |> String.split("@")
-
-    #   {
-    #     pattern,
-    #     case index |> length do
-    #       0 -> k
-    #   }
-    # end
-  end
+  # @spec parse_spec(String.t()) :: tuple
+  # def parse_spec(spec) do
+  #   @spaces |> Regex.split(spec) |> parse_spec_
+  # end
 
   defp lemmatize_token_spec([], _spec, _indices, _all_spec, result, _engine) do
     {:ok, result}
