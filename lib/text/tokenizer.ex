@@ -1,11 +1,9 @@
-defmodule Tiger.Text.Tokenizer do
-  alias Tiger.Text.Struct, as: Text
+ defmodule Tiger.Text.Tokenizer do
+  alias Tiger.Text, as: Text
   alias Tiger.Text.Token, as: Token
 
-  import Error, only: [wrap: 2]
-
-  @space ~r/\s+/
-  @punctuation ~r/\p{P}/
+  import Tiger.Util.String, only: [space?: 1, punctuation?: 1]
+  import Tiger.Error, only: [set: 2]
 
   # split
 
@@ -19,19 +17,18 @@ defmodule Tiger.Text.Tokenizer do
   end
 
   defp collect_tokens([head | tail], token, separator) do
-    if Regex.match?(@space, head) do
+    if space?(head) do
       collect_tokens(tail, token, (if separator == nil, do: [head], else: [head | separator])) 
     else
-      if Regex.match?(@punctuation, head) do
-        wrap collect_tokens(tail, [head], []), handle: fn tokens -> 
-        # wrap collect_tokens(tail, [head], nil), handle: fn tokens -> 
+      if punctuation?(head) do
+        set tokens: collect_tokens(tail, [head], []) do
           [ Token.init(token, separator) | tokens ]
         end
       else
         if separator == nil do
           collect_tokens(tail, (if token == nil, do: [head], else: [head | token]), nil)
         else
-          wrap collect_tokens(tail, [head], nil), handle: fn tokens ->
+          set tokens: collect_tokens(tail, [head], nil) do
             [ Token.init(token, separator) | tokens ]
           end
         end
@@ -48,7 +45,7 @@ defmodule Tiger.Text.Tokenizer do
   end
 
   def tokenize(text) do
-    wrap split(text), handle: fn tokens ->
+    set tokens: split(text) do
       %Text{raw: text, tokens: tokens}
     end
   end

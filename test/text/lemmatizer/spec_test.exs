@@ -1,6 +1,6 @@
 defmodule Tiger.Text.Lemmatizer.SpecTest.Macro do
   alias Tiger.Text.Tokenizer, as: Tokenizer
-  alias Tiger.Text.Token.Spec, as: Spec
+  alias Tiger.Text.Spec, as: Spec
   alias Tiger.Text.Lemmatizer.Spec, as: Lemmatizer
 
   import Tiger.Error, only: [get: 2]

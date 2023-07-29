@@ -3,7 +3,7 @@ defmodule Tiger.Text.Lemmatizer.Spec do
 
   alias Tiger.Text.Token.Template, as: Template
   alias Tiger.Text.Token, as: Token
-  alias Tiger.Text.Token.Spec, as: Spec
+  alias Tiger.Text.Spec, as: Spec
 
   alias Tiger.Text.Lemmatizer.Spec, as: Self
   alias Tiger.Text.Lemmatizer.Wrapper, as: Wrapper

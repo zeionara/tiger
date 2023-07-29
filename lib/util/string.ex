@@ -2,6 +2,7 @@ defmodule Tiger.Util.String do
   import Llist, only: [reverse: 1]
 
   @spaces ~r/\s+/
+  @punctuation ~r/\p{P}/
 
   @space " "
   @underscore "_"
@@ -42,5 +43,15 @@ defmodule Tiger.Util.String do
     for item <- String.split(string, @comma) do
       String.trim(item)
     end
+  end
+
+  # match
+
+  def space?(string) do
+    Regex.match?(@spaces, string)
+  end
+
+  def punctuation?(string) do
+    Regex.match?(@punctuation, string)
   end
 end

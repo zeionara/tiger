@@ -41,7 +41,7 @@ alias Tiger.Commit.Title, as: Title
 alias Tiger.Commit.Description, as: Description
 alias Tiger.Command.Struct, as: Command
 
-alias Tiger.Text.Token.Spec, as: Spec
+alias Tiger.Text.Spec, as: Spec
 alias Tiger.Text.Lemmatizer.Spec, as: Lemmatizer
 
 flag :verbose
@@ -136,7 +136,7 @@ case opt :commit_title do
     title: title = %Title{
       type: type,
       scope: scope,
-      content: %Tiger.Text.Struct{
+      content: %Tiger.Text{
         tokens: tokens
       }
     },

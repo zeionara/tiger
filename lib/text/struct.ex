@@ -1,3 +1,3 @@
-defmodule Tiger.Text.Struct do
+defmodule Tiger.Text do
   defstruct [:raw, :tokens]
 end
