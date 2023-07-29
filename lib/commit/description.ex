@@ -1,5 +1,5 @@
 defmodule Tiger.Commit.Description do
-  import Tiger.Util.List, only: [second: 1]
+  import Tiger.Util.Collection, only: [second: 1]
 
   defstruct [:commands, :content]
 

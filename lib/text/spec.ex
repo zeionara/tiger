@@ -4,6 +4,7 @@ defmodule Tiger.Text.Spec do
   alias Tiger.Text.Token.Template, as: Template
 
   import Tiger.Util.String, only: [ss: 1]
+  import Tiger.Util.Collection, only: [first: 1]
 
   import Error, only: [wrap: 2, wrapn: 2]
 
@@ -26,7 +27,7 @@ defmodule Tiger.Text.Spec do
           shape,
           case n_args do
             0 -> nil
-            1 -> args |> Tiger.Util.List.first |> Integer.parse |> Tiger.Util.Tuple.first # TODO: implement an interface
+            1 -> args |> first |> Integer.parse |> first
           end
         ), handle: fn template ->
           [ template | templates ]

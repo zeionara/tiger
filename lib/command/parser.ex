@@ -7,7 +7,7 @@ defmodule Tiger.Command.Parser do
   import Error, only: [wrap: 2, wrapn: 2]
 
   alias Tiger.Command.Argument.Mark, as: Am
-  alias Tiger.Command.Struct, as: Command
+  alias Tiger.Command, as: Command
 
   # @command ~r/!([a-z\-]+)\s*((?:\$[^\s]+\s*)*)/
   @command Regex.compile!("!([a-z\-]+)\\s*((?:#{"" |> Am.add_heading_mark |> Regex.escape}[^\\s]+\\s*)*)")

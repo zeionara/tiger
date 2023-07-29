@@ -39,7 +39,7 @@ import Error, only: [wrap: 2] # , escalate: 1]
 
 alias Tiger.Commit.Title, as: Title
 alias Tiger.Commit.Description, as: Description
-alias Tiger.Command.Struct, as: Command
+alias Tiger.Command, as: Command
 
 alias Tiger.Text.Spec, as: Spec
 alias Tiger.Text.Lemmatizer.Spec, as: Lemmatizer

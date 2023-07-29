@@ -1,6 +1,6 @@
-defmodule Tiger.Command.Struct do
+defmodule Tiger.Command do
   import Tiger.Util.String, only: [ss: 1]
-  import Llist, only: [transform: 2]
+  import Tiger.Util.Collection, only: [transform: 2]
 
   alias Tiger.Command.Argument.SpaceSeparated.Normalizer, as: Ssan
   alias Tiger.Command.Argument.Mark, as: Am
@@ -8,7 +8,7 @@ defmodule Tiger.Command.Struct do
   defstruct [:name, :args]
 
   defp build(name, args) do
-    %Tiger.Command.Struct{name: name, args: args}
+    %Tiger.Command{name: name, args: args}
   end
 
   def init(name, args) do

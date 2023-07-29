@@ -1,5 +1,5 @@
 defmodule Tiger.Command.Argument.SpaceSeparated.Mark do
-  import Llist, only: [drop_last: 1]
+  import Tiger.Util.Collection, only: [drop_last: 1]
   import Tiger.Util.String, only: [join: 1]
 
   @mark "^&"

@@ -1,5 +1,5 @@
 defmodule Tiger.Util.String do
-  import Llist, only: [reverse: 1]
+  import Tiger.Util.Collection, only: [reverse: 1]
 
   @spaces ~r/\s+/
   @punctuation ~r/\p{P}/
@@ -26,7 +26,7 @@ defmodule Tiger.Util.String do
   # join
 
   def join(graphemes) do
-    graphemes |> Llist.join("")
+    graphemes |> Tiger.Util.Collection.join("")
   end
 
   def rjoin(graphemes) do # reverse join

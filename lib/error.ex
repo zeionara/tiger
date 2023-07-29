@@ -36,45 +36,6 @@ defmodule Tiger.Error do
 
   defmacro get(opts, do: expression) do
     make_ast(opts, do: expression, nested: true)
-    # {var, call} = case opts do
-    #   [{var, call} | _] -> {var, call}
-    #   call -> {:val, call}
-    # end
-
-    # quote do
-    #   case unquote(call) do
-    #     {:ok, result} ->
-    #       unquote(Macro.var(var, nil)) = result
-
-    #       case unquote(expression) do
-    #         {:ok, result} = response -> response
-    #         result -> {:ok, result}
-    #       end
-    #     {:error, message} -> {:error, message}
-    #   end
-    # end
-  end
-
-  defmacro gett(opts, do: expression) do
-    {var, call} = case opts do
-      [{var, call} | _] -> {var, call}
-      call -> {:val, call}
-    end
-
-    quote do
-      case unquote(call) do
-        {:ok, result} ->
-          unquote(Macro.var(var, nil)) = result
-
-          # case unquote(expression) do
-          #   {:ok, result} = response -> response
-          #   result -> {:ok, result}
-          # end
-
-          {:ok, unquote(expression)}
-        {:error, message} -> {:error, message}
-      end
-    end
   end
 end
 

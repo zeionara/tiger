@@ -1,5 +1,6 @@
 defmodule Tiger.Text.Lemmatizer.Wrapper do
   import Opts, only: [flag: 1, rflag: 1, val: 2]
+  import Tiger.Util.Collection, only: [first: 1]
 
   @suffix "##"
   @length @suffix |> String.graphemes |> length
@@ -18,7 +19,7 @@ defmodule Tiger.Text.Lemmatizer.Wrapper do
       if idempotent do
         case engine |> Lemma.parse(word) do
           result = {:ok, _} -> result
-          {:ambigious, alternatives} -> {:ok, alternatives |> Tiger.Util.List.first}
+          {:ambigious, alternatives} -> {:ok, alternatives |> first}
           {:error, "not possible"} -> {:ok, guess(word)}
         end
       else

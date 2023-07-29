@@ -178,7 +178,7 @@ defmodule Tiger do
               card = head["id"]
 
               wrapn get_list_id(board, @close_list), handle: fn list ->
-                Trello.move(card, list["id"], Llist.merge(opts, [done: true]))
+                Trello.move(card, list["id"], Tiger.Util.Collection.chain(opts, [done: true]))
               end
             _ -> {:error, "Too many cards with signature #{signature}"}
           end
