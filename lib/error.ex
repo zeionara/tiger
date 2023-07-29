@@ -1,3 +1,34 @@
+defmodule Tiger.Error do
+  # defmacro wrap(call, do: expression) do
+  #   quote do
+  #     case unquote(call) do
+  #       {:ok, result} ->
+  #         unquote(Macro.var(:val, nil)) = result
+
+  #         {:ok, unquote(expression)}
+  #       {:error, message} -> {:error, message}
+  #     end
+  #   end
+  # end
+
+  defmacro get(opts, do: expression) do
+    {var, call} = case opts do
+      [{var, call} | _] -> {var, call}
+      call -> {:val, call}
+    end
+
+    quote do
+      case unquote(call) do
+        {:ok, result} ->
+          unquote(Macro.var(var, nil)) = result
+
+          {:ok, unquote(expression)}
+        {:error, message} -> {:error, message}
+      end
+    end
+  end
+end
+
 defmodule Error do
   defmacro wrap(call, handle: handle) do
     quote do

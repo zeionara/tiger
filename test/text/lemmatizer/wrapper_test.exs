@@ -22,7 +22,7 @@ defmodule Tiger.Text.Lemmatizer.WrapperTest do
   end
 
   ensure "simple regular word", token: "added", lemma: "add"
-  ensure "difficult regular word", token: "refactored", lemma: "refactor" # lemmatized doesn't now an answer, this value is obtained by guessing
+  ensure "difficult regular word", token: "refactored", lemma: "refactor" # lemmatizer doesn't now an answer, this value is obtained by guessing
 
   ensure "simple irregular word", token: "felt", lemma: "feel"
   ensure "difficult irregular word", token: "went", lemma: "we" # lemmatizer gives incorrect answer
