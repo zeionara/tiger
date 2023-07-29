@@ -30,3 +30,5 @@ tiger-*.tar
 
 /on.sh
 /off.sh
+
+/assets/lemmatizer-state.bin

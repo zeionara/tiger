@@ -6,6 +6,12 @@ defmodule Opts do
     end
   end
 
+  defmacro val(name, default: default) do
+    quote do
+      unquote(Macro.var(name, nil)) = Keyword.get(var!(opts), unquote(name), unquote(default))
+    end
+  end
+
   defmacro opt(name, handle: handle) do
     quote do
       case var!(opts) |> Keyword.get(unquote(name)) do

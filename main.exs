@@ -40,7 +40,9 @@ import Error, only: [wrap: 2] # , escalate: 1]
 alias Tiger.Commit.Title, as: Title
 alias Tiger.Commit.Description, as: Description
 alias Tiger.Command.Struct, as: Command
+
 alias Tiger.Text.Token.Spec, as: Spec
+alias Tiger.Text.Lemmatizer.Spec, as: Lemmatizer
 
 flag :verbose
 flag :skip
@@ -158,8 +160,8 @@ case opt :commit_title do
           # IO.inspect tokens
           # IO.inspect Keyword.get(task, :tokens)
           IO.inspect spec
-          wrap spec |> Spec.init, handle: fn %Spec{templates: templates} ->
-            IO.inspect Lemmatizer.lemmatize(templates, tokens, debug: true)
+          wrap spec |> Spec.init, handle: fn spec ->
+            IO.inspect Lemmatizer.apply(spec, tokens)
           end
           # wrap lemmatization_spec |> Lemmatizer.parse_spec, handle: fn spec ->
           #   wrap Lemmatizer.lemmatize(spec, Keyword.get(task, :tokens) |> elem(1)), handle: fn tokens ->
