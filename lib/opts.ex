@@ -1,9 +1,24 @@
 defmodule Opts do
-  defmacro flag(name) do
+  defp make_ast(name, default: default) do
     quote do
-      # var!(unquote(name)) = Keyword.get(var!(opts), unquote(name), false)
-      unquote(Macro.var(name, nil)) = Keyword.get(var!(opts), unquote(name), false)
+      unquote(Macro.var(name, nil)) = Keyword.get(var!(opts), unquote(name), unquote(default))
     end
+  end
+
+  defmacro flag(name) do
+    make_ast(name, default: false)
+    # quote do
+    #   # var!(unquote(name)) = Keyword.get(var!(opts), unquote(name), false)
+    #   unquote(Macro.var(name, nil)) = Keyword.get(var!(opts), unquote(name), false)
+    # end
+  end
+
+  defmacro rflag(name) do
+    make_ast(name, default: true)
+    # quote do
+    #   # var!(unquote(name)) = Keyword.get(var!(opts), unquote(name), false)
+    #   unquote(Macro.var(name, nil)) = Keyword.get(var!(opts), unquote(name), false)
+    # end
   end
 
   defmacro val(name, default: default) do

@@ -17,7 +17,7 @@ defmodule Tiger.Text.Token.Template do
   import Error, only: [wrap: 2]
 
   def compile(shape, index) do
-    wrap shape |> String.replace("*", "[^\\s]*") |> Regex.compile, handle: fn shape ->
+    wrap "^#{shape |> String.replace("*", "[^\\s]*")}$" |> Regex.compile, handle: fn shape ->
       %Tiger.Text.Token.Template{
         shape: shape,
         index: index

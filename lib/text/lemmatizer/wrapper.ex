@@ -1,23 +1,28 @@
 defmodule Tiger.Text.Lemmatizer.Wrapper do
-  import Opts, only: [flag: 1, val: 2]
+  import Opts, only: [flag: 1, rflag: 1, val: 2]
 
   @suffix "##"
   @length @suffix |> String.graphemes |> length
 
   defp guess(word) do
-    "#{word |> String.slice(0..-3)}"
+    "#{word |> String.slice(0..-3)}" # drop last two letters
   end
 
   def parse(engine, word, opts \\ [debug: false]) do
     flag :debug
+    rflag :idempotent
 
     if debug do
-      {:ok, "#{word |> String.slice(0..-(@length + 1))}#{@suffix}"}
+      {:ok, "#{word |> String.slice(0..-(@length + if idempotent, do: 1, else: 0))}#{@suffix}"}
     else
-      case engine |> Lemma.parse(word) do
-        result = {:ok, _} -> result
-        {:ambigious, alternatives} -> {:ok, alternatives |> Tiger.Util.List.first}
-        {:error, "not possible"} -> {:ok, guess(word)}
+      if idempotent do
+        case engine |> Lemma.parse(word) do
+          result = {:ok, _} -> result
+          {:ambigious, alternatives} -> {:ok, alternatives |> Tiger.Util.List.first}
+          {:error, "not possible"} -> {:ok, guess(word)}
+        end
+      else
+        {:error, :incorrect_idempotent_option_use}
       end
     end
   end
