@@ -10,8 +10,8 @@ defmodule Tiger.Error do
   #     end
   #   end
   # end
-
-  defmacro get(opts, do: expression) do
+  
+  def build_ast(opts, do: expression, wrap_result: wrap_result) do
     {var, call} = case opts do
       [{var, call} | _] -> {var, call}
       call -> {:val, call}
@@ -22,7 +22,35 @@ defmodule Tiger.Error do
         {:ok, result} ->
           unquote(Macro.var(var, nil)) = result
 
-          {:ok, unquote(expression)}
+          unquote(if wrap_result, do: {:ok, expression}, else: expression)
+        {:error, message} -> {:error, message}
+      end
+    end
+  end
+
+  defmacro get(opts, do: expression) do
+    build_ast(opts, do: expression, wrap_result: true)
+  end
+
+  defmacro gen(opts, do: expression) do # gen = get nested
+    build_ast(opts, do: expression, wrap_result: false)
+  end
+
+  defmacro gef(opts, do: expression) do # gef = get from
+    {var, call} = case opts do
+      [{var, call} | _] -> {var, call}
+      call -> {:val, call}
+    end
+
+    quote do
+      case unquote(call) do
+        {:ok, result} ->
+          unquote(Macro.var(var, nil)) = result
+
+          case unquote(expression) do
+            {:ok, result} = response -> response
+            result -> {:ok, result}
+          end
         {:error, message} -> {:error, message}
       end
     end

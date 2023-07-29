@@ -25,7 +25,11 @@ defmodule Tiger.Text.Token.Template do
     end
   end
 
-  def shape_match?(%Tiger.Text.Token.Template{shape: shape}, %Tiger.Text.Token{raw: raw}) do
+  # def shape_match?(%Tiger.Text.Token.Template{shape: shape}, %Tiger.Text.Token{raw: raw}) do
+  #   shape == nil || Regex.match?(shape, raw)
+  # end
+
+  def shape_match?(shape, raw) do
     shape == nil || Regex.match?(shape, raw)
   end
 

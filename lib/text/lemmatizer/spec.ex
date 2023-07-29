@@ -12,23 +12,42 @@ defmodule Tiger.Text.Lemmatizer.Spec do
 
   import Error, only: [wrap: 2, wrapn: 2]
 
+  defp increment_indices(%Token{raw: raw}, indices) do
+    Enum.map(indices, fn {shape, index} ->
+      if shape |> Template.shape_match?(raw) do
+        {shape, index + 1}
+      else
+        {shape, index}
+      end
+    end) |> Map.new
+  end
+
   defp lemmatize([], _state, _opts) do
     {:ok, []}
   end
 
   defp lemmatize([ token | tail ], %Self{remaining_templates: [], all_templates: templates, shape_indices: indices, engine: engine}, opts) do
-    wrap lemmatize(tail, %Self{remaining_templates: templates, all_templates: templates, shape_indices: indices, engine: engine}, opts), handle: fn result ->
+    wrap lemmatize(tail, %Self{remaining_templates: templates, all_templates: templates, shape_indices: increment_indices(token, indices), engine: engine}, opts), handle: fn result ->
       [ token | result ]
     end
   end
 
   defp lemmatize(
-    tokens = [token = %Token{raw: raw, sep: sep} | token_tail],
+    tokens = [%Token{raw: raw, sep: sep} | token_tail],
     %Self{remaining_templates: [ template = %Template{shape: shape} | tail ], all_templates: all_templates, shape_indices: indices, engine: engine},
     opts
   ) do
-    if template |> Template.shape_match?(token) do # check that shape matches
-      next_index = Map.get(indices, shape, 0) + 1
+    # IO.inspect {token, template, indices}
+
+    if shape |> Template.shape_match?(raw) do # check that shape matches
+      # next_index = Map.get(indices, shape, 0) + 1
+
+      {indices, next_index} = case Map.get(indices, shape) do
+        nil -> {Map.put(indices, shape, 0), 1}
+        index -> {indices, index + 1}
+      end
+
+      # IO.inspect next_index
 
       if template |> Template.index_match?(next_index) do # check that index matches
         wrap Wrapper.parse(engine, raw, opts), handle: fn lemma ->
@@ -45,7 +64,8 @@ defmodule Tiger.Text.Lemmatizer.Spec do
       else
         lemmatize(
           tokens,
-          %Self{remaining_templates: tail, all_templates: all_templates, shape_indices: Map.put(indices, shape, next_index), engine: engine},
+          # %Self{remaining_templates: tail, all_templates: all_templates, shape_indices: Map.put(indices, shape, next_index), engine: engine},
+          %Self{remaining_templates: tail, all_templates: all_templates, shape_indices: indices, engine: engine},
           opts
         )
       end
