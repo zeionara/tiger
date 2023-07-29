@@ -1,20 +1,19 @@
-defmodule Tiger.Text.Spec do
-  defstruct [:templates]
-
-  alias Tiger.Text.Token.Template, as: Template
+defmodule Tiger.Text.Spec.Parser do
+  import Tiger.Error, only: [get: 2, set: 2]
 
   import Tiger.Util.String, only: [ss: 1]
   import Tiger.Util.Collection, only: [first: 1]
 
-  import Tiger.Error, only: [get: 2, set: 2]
+  alias Tiger.Text.Token.Template, as: Template
+  alias Tiger.Text.Spec, as: Spec
 
   @argument_separator "@"
 
-  defp parse([]) do
+  defp parse_([]) do
     {:ok, []}
   end
 
-  defp parse([ head | tail ]) do
+  defp parse_([ head | tail ]) do
     [ shape | args ] = head |> String.split(@argument_separator)
 
     n_args = args |> length
@@ -22,7 +21,7 @@ defmodule Tiger.Text.Spec do
     if n_args > 1 do
       {:error, {:too_many_arguments_in_token_template_definition, head}}
     else
-      get templates: parse(tail) do
+      get templates: parse_(tail) do
         set template: Template.compile(
           shape,
           case n_args do
@@ -36,12 +35,9 @@ defmodule Tiger.Text.Spec do
     end
   end
 
-  # @spec init(String.t()) :: %Tiger.Text.Token.Spec{}
-  def init(spec) do
-    get templates: spec |> ss |> parse do
-      %Tiger.Text.Spec{
-        templates: templates
-      }
+  def parse(templates) do
+    set templates: templates |> ss |> parse_ do
+      Spec.init(templates)
     end
   end
 end
