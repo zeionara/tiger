@@ -35,18 +35,20 @@
 # IO.inspect opts
 
 import Tiger.Opt, only: [opt!: 2, opt: 1, flag: 1, deff: 1, opt?: 2]
-import Tiger.Error, only: [get: 2, set: 2]
+# import Tiger.Error, only: [get: 2, set: 2]
+import Tiger.Error, only: [get: 2]
 # import Error, only: [wrap: 2] # , escalate: 1]
 
 alias Tiger.Commit.Title, as: Title
 alias Tiger.Commit.Description, as: Description
 alias Tiger.Command, as: Command
 
-alias Tiger.Text.Spec, as: Spec
 alias Tiger.Text.Spec.Parser, as: Parser
 alias Tiger.Text.Lemmatizer.Spec, as: Lemmatizer
-alias Tiger.Text.Token, as: Token
-alias Tiger.Text.Lemmatizer.Wrapper, as: Wrapper
+
+# alias Tiger.Text.Spec, as: Spec
+# alias Tiger.Text.Token, as: Token
+# alias Tiger.Text.Lemmatizer.Wrapper, as: Wrapper
 
 deff :verbose
 deff :skip
@@ -175,21 +177,22 @@ case opt :commit_title do
           # IO.inspect Keyword.get(task, :tokens)
           IO.inspect spec
           get spec: spec |> Parser.parse do
-            IO.inspect Lemmatizer.apply(spec, tokens)
+            spec |> Lemmatizer.apply(title_text) |> IO.inspect
+            # IO.inspect Lemmatizer.apply(spec, tokens)
 
-            debug = true
+            # debug = true
 
-            engine = if debug do
-              nil
-            else
-              Wrapper.new
-            end
+            # engine = if debug do
+            #   nil
+            # else
+            #   Wrapper.new
+            # end
 
-            spec |> Spec.apply(title_text, fn %Token{raw: raw, sep: sep} ->
-              set lemma: Wrapper.parse(engine, raw, debug: debug) do
-                %Token{raw: lemma, sep: sep}
-              end
-            end) |> IO.inspect
+            # spec |> Spec.apply(title_text, fn %Token{raw: raw, sep: sep} ->
+            #   set lemma: Wrapper.parse(engine, raw, debug: debug) do
+            #     %Token{raw: lemma, sep: sep}
+            #   end
+            # end) |> IO.inspect
           end
           # wrap lemmatization_spec |> Lemmatizer.parse_spec, handle: fn spec ->
           #   wrap Lemmatizer.lemmatize(spec, Keyword.get(task, :tokens) |> elem(1)), handle: fn tokens ->

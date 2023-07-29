@@ -100,7 +100,11 @@ defmodule Tiger.Text.Spec do
     end
   end
 
-  def apply(%Spec{templates: templates}, %Text{tokens: tokens}, transform, opts \\ [debug: false]) do
-    apply_(tokens, %State{remaining_templates: templates, all_templates: templates, transform: transform}, opts)
+  def apply(%Spec{templates: templates}, text = %Text{tokens: tokens}, transform, opts \\ [debug: false]) do
+    set tokens: apply_(tokens, %State{remaining_templates: templates, all_templates: templates, transform: transform}, opts) do
+      %Text{
+        text | tokens: tokens
+      }
+    end
   end
 end

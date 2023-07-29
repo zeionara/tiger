@@ -1,6 +1,7 @@
 defmodule Tiger.Text.Lemmatizer.SpecTest.Macro do
   alias Tiger.Text.Tokenizer, as: Tokenizer
   # alias Tiger.Text.Spec, as: Spec
+  # alias Tiger.Text, as: Text
   alias Tiger.Text.Spec.Parser, as: Parser
   alias Tiger.Text.Lemmatizer.Spec, as: Lemmatizer
 
@@ -17,10 +18,10 @@ defmodule Tiger.Text.Lemmatizer.SpecTest.Macro do
 
     quote do
       test unquote(name) do
-        get tokens: Tokenizer.split(unquote(input)) do
+        get text: Tokenizer.tokenize(unquote(input)) do
           get spec: Parser.parse(unquote(spec)) do
-            get lemmas: Lemmatizer.apply(var!(spec), var!(tokens), debug: unquote(debug), idempotent: unquote(idempotent)) do
-              assert Tokenizer.join(var!(lemmas)) == unquote(output)
+            get result: Lemmatizer.apply(var!(spec), var!(text), debug: unquote(debug), idempotent: unquote(idempotent)) do
+              assert Tokenizer.join(var!(result).tokens) == unquote(output)
             end
           end
         end
