@@ -63,33 +63,16 @@ defmodule Tiger.Opt do
         raise "Missing required property #{unquote(name)}"
       end
     )
-    # quote do
-    #   case var!(opts) |> Keyword.get(unquote(name)) do
-    #     nil -> raise "Missing required property #{unquote(name)}"
-    #     result ->
-    #       Macro.var(name, nil) = result
-    #       unquote(expression)
-    #   end
-    # end
   end
 
   defmacro opt?(name, do: expression) do
     make_handling_ast(name, positive: expression, negative: nil)
-    # quote do
-    #   case var!(opts) |> Keyword.get(unquote(name)) do
-    #     nil -> nil
-    #     value -> 
-    #       Macro.var(name, nil) = value
-    #       unquote(expression)
-    #   end
-    # end
   end
 
   # get
 
   defmacro opt(name, default: default) do
     quote do
-      # case Keyword.get(var!(opts), unquote(name)) do
       case unquote(make_getting_ast(name)) do
         nil -> unquote(default)
         value -> value
@@ -99,15 +82,9 @@ defmodule Tiger.Opt do
 
   defmacro opt(name) do
     make_getting_ast(name)
-    # quote do
-    #   Keyword.get(var!(opts), unquote(name))
-    # end
   end
 
   defmacro flag(name) do
     make_getting_ast(name, false)
-    # quote do
-    #   Keyword.get(var!(opts), unquote(name), false)
-    # end
   end
 end
