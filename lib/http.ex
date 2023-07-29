@@ -3,7 +3,7 @@ defmodule Http do
   Basic http methods for working with rest apis
   """
 
-  import Opts, only: [opt: 2]
+  import Tiger.Opt, only: [opt: 2]
 
   defp push_params(url, params) do
     "#{url}?#{URI.encode_query(params)}"

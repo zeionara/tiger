@@ -1,5 +1,5 @@
 defmodule Trello do
-  import Opts, only: [bop: 1, opt: 2, opt: 1]
+  import Tiger.Opt, only: [flag: 1, opt: 2, opt: 1]
 
   @api_key System.get_env("TRELLO_KEY")
   @api_token System.get_env("TRELLO_TOKEN")
@@ -59,7 +59,7 @@ defmodule Trello do
   def move(card, list, opts) do
     put(
       "#{@root}/cards/#{card}",
-      params: %{ "idList" => list } |> zoom(bop :zoom) |> due(opt :due) |> due_complete(bop :done)
+      params: %{ "idList" => list } |> zoom(flag :zoom) |> due(opt :due) |> due_complete(flag :done)
     )
   end
 
@@ -101,7 +101,7 @@ defmodule Trello do
       labels -> params |> Map.put("idLabels", labels |> Formatter.join_list)
     end
 
-    params = params |> due(opt :due) |> due_complete(bop :done) |> zoom(bop :zoom)
+    params = params |> due(opt :due) |> due_complete(flag :done) |> zoom(flag :zoom)
 
     response = post("#{@root}/cards", params: params)
 

@@ -1,5 +1,5 @@
 defmodule Tiger do
-  import Opts, only: [flag: 1, bop: 1, opt: 1]
+  import Tiger.Opt, only: [deff: 1, flag: 1, opt: 1]
   import Error, only: [wrap: 2, wrapn: 2]
 
   @debug true
@@ -16,7 +16,7 @@ defmodule Tiger do
   end
 
   defp get_member_ids([ head | tail], opts) do
-    flag :skip
+    deff :skip
     # skip = Keyword.get(opts, :skip, false)
 
     case Trello.get_member(head) do
@@ -72,8 +72,8 @@ defmodule Tiger do
         due: due,
         members: members,
         labels: labels,
-        due: bop(:done),
-        zoom: bop(:zoom)
+        due: flag(:done),
+        zoom: flag(:zoom)
       ]))
       error -> error
     end
@@ -91,7 +91,7 @@ defmodule Tiger do
 
   defp create_card(board, list, name, due, opts) do
     # skip = Keyword.get(opts, :skip, false)
-    flag :skip
+    deff :skip
 
     case Keyword.get(opts, :labels) do
       nil -> create_card(board, list, name, due, nil, opts)

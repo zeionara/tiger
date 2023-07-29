@@ -4,15 +4,15 @@ defmodule Tiger.Text.Lemmatizer.SpecTest.Macro do
   alias Tiger.Text.Lemmatizer.Spec, as: Lemmatizer
 
   import Tiger.Error, only: [get: 2]
-  import Opts, only: [opt: 1, flag: 1, rflag: 1]
+  import Tiger.Opt, only: [deff: 1, defr: 1, defo: 1, defo: 2]
 
   defmacro ensure(name, opts) do
-    input = opt :in
-    spec = opt :spec
-    output = opt :out
+    deff :debug
+    defr :idempotent
 
-    flag :debug
-    rflag :idempotent
+    defo :in, as: :input
+    defo :spec
+    defo :out, as: :output
 
     quote do
       test unquote(name) do

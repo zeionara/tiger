@@ -34,7 +34,7 @@
 
 # IO.inspect opts
 
-import Opts, only: [opt: 2, opt: 1, bop: 1, flag: 1, oop: 2]
+import Tiger.Opt, only: [opt!: 2, opt: 1, flag: 1, deff: 1, opt?: 2]
 import Error, only: [wrap: 2] # , escalate: 1]
 
 alias Tiger.Commit.Title, as: Title
@@ -44,9 +44,9 @@ alias Tiger.Command, as: Command
 alias Tiger.Text.Spec, as: Spec
 alias Tiger.Text.Lemmatizer.Spec, as: Lemmatizer
 
-flag :verbose
-flag :skip
-flag :now
+deff :verbose
+deff :skip
+deff :now
 
 parse_date = fn (opt_name, now) ->
   case Formatter.parse_date(opts, opt_name) do
@@ -72,9 +72,12 @@ parse_all = fn () ->
             name -> Tiger.create_card(board, list, name,
                 verbose: verbose,
                 skip: skip,
-                zoom: bop(:zoom),
+                zoom: flag(:zoom),
 
-                description: oop(:description, handle: fn value -> value |> String.trim |> String.capitalize end),
+                description: opt? :description do
+                  description |> String.trim |> String.capitalize
+                end,
+ 
                 # description: Formatter.parse_body(opts, :description),
                 members: Formatter.parse_list(opts, :members),
                 labels: Formatter.parse_list(opts, :tags),
@@ -98,12 +101,12 @@ merge_label_lists = fn (labels) ->
 end
 
 parse_some = fn (name, labels, description) ->
-  opt :board, handle: fn board ->
-    opt :list, handle: fn list ->
+  opt! :board do
+    opt! :list do
       Tiger.create_card(board, list, name,
         verbose: verbose,
         skip: skip,
-        zoom: bop(:zoom),
+        zoom: flag(:zoom),
 
         # description: oop(:description, handle: fn value -> value |> String.trim |> String.capitalize end),
         # description: Formatter.parse_body(opts, :description),
@@ -111,7 +114,7 @@ parse_some = fn (name, labels, description) ->
         members: Formatter.parse_list(opts, :members),
         labels: merge_label_lists.(labels),
         due: parse_date.(:complete, now),
-        done: bop(:done)
+        done: flag(:done)
       ) # |> IO.inspect
     end
   end
@@ -119,11 +122,11 @@ end
 
 
 close = fn (signature, labels) ->
-  opt :board, handle: fn board ->
+  opt! :board do
     Tiger.close_card(board, signature,
       verbose: verbose,
       labels: merge_label_lists.(labels),
-      zoom: bop(:zoom),
+      zoom: flag(:zoom),
       due: parse_date.(:complete, now)
     )
   end
@@ -132,7 +135,12 @@ end
 case opt :commit_title do
   nil -> parse_all.()
   # title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
-  title -> wrap Tiger.Commit.Parser.parse(title, oop(:commit_description, handle: &Tiger.Commit.Description.drop_title/1)), handle: fn %Tiger.Commit.Message{
+  title -> wrap Tiger.Commit.Parser.parse(
+    title,
+    opt? :commit_description do
+      commit_description |> Tiger.Commit.Description.drop_title
+    end
+  ), handle: fn %Tiger.Commit.Message{
     title: title = %Title{
       type: type,
       scope: scope,

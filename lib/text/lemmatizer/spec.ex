@@ -1,5 +1,5 @@
 defmodule Tiger.Text.Lemmatizer.Spec do
-  import Opts, only: [flag: 1]
+  import Tiger.Opt, only: [deff: 1]
 
   alias Tiger.Text.Token.Template, as: Template
   alias Tiger.Text.Token, as: Token
@@ -108,7 +108,7 @@ defmodule Tiger.Text.Lemmatizer.Spec do
   end
 
   def apply(%Spec{templates: templates}, tokens, opts \\ [debug: false]) do
-    flag :debug
+    deff :debug
 
     lemmatize(tokens,
       %Self{

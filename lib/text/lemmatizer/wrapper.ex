@@ -1,5 +1,5 @@
 defmodule Tiger.Text.Lemmatizer.Wrapper do
-  import Opts, only: [flag: 1, rflag: 1, val: 2]
+  import Tiger.Opt, only: [deff: 1, defr: 1, defo: 2]
   import Tiger.Util.Collection, only: [first: 1]
 
   @suffix "##"
@@ -10,8 +10,8 @@ defmodule Tiger.Text.Lemmatizer.Wrapper do
   end
 
   def parse(engine, word, opts \\ [debug: false]) do
-    flag :debug
-    rflag :idempotent
+    deff :debug
+    defr :idempotent
 
     if debug do
       {:ok, "#{word |> String.slice(0..-(@length + if idempotent, do: 1, else: 0))}#{@suffix}"}
@@ -38,12 +38,12 @@ defmodule Tiger.Text.Lemmatizer.Wrapper do
   end
 
   def new(opts \\ []) do
-    val :path, default: "assets"
-    val :filename, default: "lemmatizer-state.bin"
-    val :language, default: :en
+    deff :no_cache
+    deff :refresh
 
-    flag :no_cache
-    flag :refresh
+    defo :path, default: "assets"
+    defo :filename, default: "lemmatizer-state.bin"
+    defo :language, default: :en
 
     if no_cache || path == nil || filename == nil do
       language |> make
