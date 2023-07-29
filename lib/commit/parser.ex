@@ -1,5 +1,4 @@
 defmodule Tiger.Commit.Parser do
-  import Error
   alias Tiger.Command.Argument.SpaceSeparated.Parser, as: Ssap
   alias Tiger.Command.Argument.SpaceSeparated.Normalizer, as: Ssan
 
@@ -9,6 +8,8 @@ defmodule Tiger.Commit.Parser do
   alias Tiger.Commit.Title, as: Title
   alias Tiger.Commit.Description, as: Description
   alias Tiger.Commit.Message, as: Message
+
+  import Tiger.Error, only: [get: 2, set: 2]
 
   @moduledoc """
   Commit parser and adapter for working with trello interface
@@ -23,7 +24,7 @@ defmodule Tiger.Commit.Parser do
         case Regex.named_captures(@short_title_pattern, title) do
           nil -> {:error, "Incorrect commit title '#{title}' - missing prefix"}
           captures ->
-            wrap Tokenizer.tokenize(captures["description"]), handle: fn text ->
+            set text: Tokenizer.tokenize(captures["description"]) do
               %Title{
                 type: captures["type"],
                 content: text
@@ -31,7 +32,7 @@ defmodule Tiger.Commit.Parser do
             end
         end
       captures -> 
-        wrap Tokenizer.tokenize(captures["description"]), handle: fn text -> 
+        set text: Tokenizer.tokenize(captures["description"]) do
           %Title{
             type: captures["type"],
             scope: captures["scope"],
@@ -45,11 +46,11 @@ defmodule Tiger.Commit.Parser do
     case description do
       nil -> nil
       description ->
-        wrap description |> Ssap.find_all, handle: fn ssaps ->
-          wrapn description |> Ssan.normalize(ssaps) |> Command.find_all, handle: fn %Tiger.Command.ParsingResult{commands: commands, string: content} ->
+        get args: description |> Ssap.find_all do
+          set result: description |> Ssan.normalize(args) |> Command.find_all do
             %Description{
-              content: content,
-              commands: commands
+              content: result.string,
+              commands: result.commands
             }
           end
         end
@@ -57,8 +58,8 @@ defmodule Tiger.Commit.Parser do
   end
 
   def parse(title, description \\ nil) when title != nil do
-    wrap parse_title(title), handle: fn title ->
-      wrapn parse_description(description), handle: fn description ->
+    get title: parse_title(title) do
+      set description: parse_description(description) do
         %Message{
           title: title,
           description: description

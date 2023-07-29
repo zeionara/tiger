@@ -2,7 +2,7 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Parser do
   import Tiger.Command.Argument.SpaceSeparated.Mark
   import Tiger.Command.Argument.SpaceSeparated.Struct
 
-  import Error, only: [wrap: 2]
+  import Tiger.Error, only: [set: 2]
 
   @incomplete_argument_message "Incomplete argument at the end of the string"
 
@@ -29,12 +29,12 @@ defmodule Tiger.Command.Argument.SpaceSeparated.Parser do
     next_prefix = prepend(head, prefix)
 
     if is_mark(prefix) do
-      wrap collect_space_separated_arguments(tail, (if argument == nil, do: [head], else: nil), next_prefix), handle: fn arguments ->
+      set args: collect_space_separated_arguments(tail, (if argument == nil, do: [head], else: nil), next_prefix) do
         if argument == nil do
-          arguments
+          args
         else
           [
-            init(argument) | arguments
+            init(argument) | args
           ]
         end
       end

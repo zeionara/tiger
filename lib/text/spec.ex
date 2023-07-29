@@ -6,7 +6,7 @@ defmodule Tiger.Text.Spec do
   import Tiger.Util.String, only: [ss: 1]
   import Tiger.Util.Collection, only: [first: 1]
 
-  import Error, only: [wrap: 2, wrapn: 2]
+  import Tiger.Error, only: [get: 2, set: 2]
 
   @argument_separator "@"
 
@@ -22,14 +22,14 @@ defmodule Tiger.Text.Spec do
     if n_args > 1 do
       {:error, {:too_many_arguments_in_token_template_definition, head}}
     else
-      wrap parse(tail), handle: fn templates ->
-        wrapn Template.compile(
+      get templates: parse(tail) do
+        set template: Template.compile(
           shape,
           case n_args do
             0 -> nil
             1 -> args |> first |> Integer.parse |> first
           end
-        ), handle: fn template ->
+        ) do
           [ template | templates ]
         end
       end
@@ -38,7 +38,7 @@ defmodule Tiger.Text.Spec do
 
   # @spec init(String.t()) :: %Tiger.Text.Token.Spec{}
   def init(spec) do
-    wrap spec |> ss |> parse, handle: fn templates ->
+    get templates: spec |> ss |> parse do
       %Tiger.Text.Spec{
         templates: templates
       }

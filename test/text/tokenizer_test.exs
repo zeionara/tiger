@@ -2,7 +2,7 @@ defmodule Tiger.Text.TokenizerTest do
   use ExUnit.Case
 
   import Tiger.Text.Tokenizer, only: [split: 1, join: 1]
-  import Error, only: [wrap: 2]
+  import Tiger.Error, only: [set: 2]
 
   alias Tiger.Text.Token, as: Token
 
@@ -60,7 +60,7 @@ defmodule Tiger.Text.TokenizerTest do
   test "joining" do
     source = "what?  ? that's..."
 
-    wrap source |> split, handle: fn tokens ->
+    set tokens: source |> split do
       assert tokens |> join == source
     end
   end

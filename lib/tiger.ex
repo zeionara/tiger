@@ -1,6 +1,6 @@
 defmodule Tiger do
   import Tiger.Opt, only: [deff: 1, flag: 1, opt: 1]
-  import Error, only: [wrap: 2, wrapn: 2]
+  import Tiger.Error, only: [get: 2]
 
   @debug true
 
@@ -49,7 +49,7 @@ defmodule Tiger do
   end
 
   defp get_list_id(board, list) do
-    wrap Trello.get_lists(board), handle: fn (body) ->
+    get body: Trello.get_lists(board) do
       lists = body |> Enum.filter(
         fn(x) ->
           case x["name"] |> Formatter.to_kebab_case do
@@ -154,8 +154,8 @@ defmodule Tiger do
     if @debug do
       {:ok, "Closed #{signature} with labels #{opt :labels}"}
     else
-      wrapn get_list_id(board, @open_list), handle: fn list ->
-        wrapn Trello.list_cards(list["id"]), handle: fn cards ->
+      get list: get_list_id(board, @open_list) do
+        get cards: Trello.list_cards(list["id"]) do
           cards = cards |> Enum.filter(
             fn x ->
               signature_matches = x["desc"] |> String.contains?(signature)
@@ -177,7 +177,7 @@ defmodule Tiger do
               [head | _ ] = cards
               card = head["id"]
 
-              wrapn get_list_id(board, @close_list), handle: fn list ->
+              get list: get_list_id(board, @close_list) do
                 Trello.move(card, list["id"], Tiger.Util.Collection.chain(opts, [done: true]))
               end
             _ -> {:error, "Too many cards with signature #{signature}"}

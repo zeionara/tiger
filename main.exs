@@ -35,7 +35,8 @@
 # IO.inspect opts
 
 import Tiger.Opt, only: [opt!: 2, opt: 1, flag: 1, deff: 1, opt?: 2]
-import Error, only: [wrap: 2] # , escalate: 1]
+import Tiger.Error, only: [get: 2]
+# import Error, only: [wrap: 2] # , escalate: 1]
 
 alias Tiger.Commit.Title, as: Title
 alias Tiger.Commit.Description, as: Description
@@ -135,24 +136,26 @@ end
 case opt :commit_title do
   nil -> parse_all.()
   # title -> wrap Commit.parse(title, opt :commit_description), handle: fn task ->
-  title -> wrap Tiger.Commit.Parser.parse(
+  title -> get message: Tiger.Commit.Parser.parse(
     title,
     opt? :commit_description do
       commit_description |> Tiger.Commit.Description.drop_title
     end
-  ), handle: fn %Tiger.Commit.Message{
-    title: title = %Title{
-      type: type,
-      scope: scope,
-      content: %Tiger.Text{
-        tokens: tokens
+  ) do
+    %Tiger.Commit.Message{
+      title: title = %Title{
+        type: type,
+        scope: scope,
+        content: %Tiger.Text{
+          tokens: tokens
+        }
+      },
+      description: %Description{
+        content: content,
+        commands: commands
       }
-    },
-    description: %Description{
-      content: content,
-      commands: commands
-    }
-  } ->
+    } = message
+
     for command <- commands do
       case command do
         %Command{name: :create, args: []} ->
@@ -168,7 +171,7 @@ case opt :commit_title do
           # IO.inspect tokens
           # IO.inspect Keyword.get(task, :tokens)
           IO.inspect spec
-          wrap spec |> Spec.init, handle: fn spec ->
+          get spec: spec |> Spec.init do
             IO.inspect Lemmatizer.apply(spec, tokens)
           end
           # wrap lemmatization_spec |> Lemmatizer.parse_spec, handle: fn spec ->

@@ -4,7 +4,7 @@ end
 
 defmodule Tiger.Command.Parser do
   import Tiger.Util.String, only: [rm: 2]
-  import Error, only: [wrap: 2, wrapn: 2]
+  import Tiger.Error, only: [get: 2]
 
   alias Tiger.Command.Argument.Mark, as: Am
   alias Tiger.Command, as: Command
@@ -17,19 +17,19 @@ defmodule Tiger.Command.Parser do
   end
 
   defp parse_many(description, [[occurrence, name, args] | []]) do
-    wrap Command.init(name, args), handle: fn command ->
+    get command: Command.init(name, args) do
       {
-        description |> rm(occurrence), 
+        description |> rm(occurrence),
         [command]
       }
     end
   end
 
   defp parse_many(string, [[occurrence, name, args] | tail]) do
-    wrap parse_many(string |> rm(occurrence), tail), handle: fn result ->
+    get result: parse_many(string |> rm(occurrence), tail) do
       { description, commands } = result
 
-      wrapn Command.init(name, args), handle: fn command ->
+      get command: Command.init(name, args) do
         {
           description, 
           [command | commands]
@@ -39,7 +39,9 @@ defmodule Tiger.Command.Parser do
   end
 
   def find_all(string) do
-    wrap string |> parse_many(Regex.scan(@command, string)), handle: fn {string, commands} ->
+    get result: string |> parse_many(Regex.scan(@command, string)) do
+      { string, commands } = result
+
       %Tiger.Command.ParsingResult{
         string: string |> String.trim,
         commands: commands

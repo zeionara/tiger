@@ -10,8 +10,7 @@ defmodule Tiger.Text.Lemmatizer.Spec do
 
   defstruct [shape_indices: %{}, handled_shapes: %{}, remaining_templates: nil, all_templates: nil, engine: nil, lemmatized: false]
 
-  import Error, only: [wrap: 2, wrapn: 2]
-  import Tiger.Error, only: [get: 2]
+  import Tiger.Error, only: [get: 2, set: 2]
 
   # defp increment_indices(%Token{raw: raw}, indices) do
   #   Enum.map(indices, fn {shape, index} ->
@@ -62,8 +61,8 @@ defmodule Tiger.Text.Lemmatizer.Spec do
       # IO.inspect index
 
       if !lemmatized && template |> Template.index_match?(index) do # check that index matches
-        wrap Wrapper.parse(engine, raw, opts), handle: fn lemma ->
-          wrapn lemmatize(
+        get lemma: Wrapper.parse(engine, raw, opts) do
+          set result: lemmatize(
             tokens,
             case Map.get(shapes, shape) do
               nil -> %Self{ # first occurrence of this shape for this token
@@ -75,7 +74,7 @@ defmodule Tiger.Text.Lemmatizer.Spec do
               }
             end,
             opts
-          ), handle: fn result ->
+          ) do
             [
               %Token{raw: lemma, sep: sep} | result
             ]
